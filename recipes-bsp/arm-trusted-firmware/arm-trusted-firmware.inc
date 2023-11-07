@@ -86,15 +86,21 @@ PLAT_HEADERS_TAGS = " s32gen1 s32cc"
 PLAT_HEADERS_TAGS:append:s32g := " s32g"
 PLAT_HEADERS_TAGS:append:s32r := " s32r45"
 
-SECBOOT = "${@bb.utils.contains('DISTRO_FEATURES', 'secboot', 'recipes-bsp/arm-trusted-firmware/atf-hse-secboot.inc', '', d)}"
-include ${SECBOOT}
+include ${@bb.utils.contains('DISTRO_FEATURES', 'secboot', 'recipes-bsp/arm-trusted-firmware/atf-hse-secboot.inc', '', d)}
+include ${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'recipes-bsp/arm-trusted-firmware/atf-hse-verifiedboot.inc', '', d)}
 
-do_compile() {
+do_clean_first() {
 	unset LDFLAGS
 	unset CFLAGS
 	unset CPPFLAGS
 
 	oe_runmake -C "${S}" clean
+}
+
+do_compile() {
+	unset LDFLAGS
+	unset CFLAGS
+	unset CPPFLAGS
 
 	if ${SCMI_DTB_NODE_CHANGE}; then
 		oe_runmake -C "${S}" dtbs
@@ -159,6 +165,7 @@ FILES:${PN}-plat-hdrs = " ${includedir}/plat-hdrs/*.h "
 PROVIDES += "${PN}-plat-hdrs"
 PACKAGES += "${PN}-plat-hdrs"
 
+addtask do_clean_first before do_configure after do_prepare_recipe_sysroot
 addtask deploy after do_compile
 
 do_compile[depends] = "virtual/bootloader:do_install"

@@ -146,6 +146,7 @@ SRC_URI += "\
 
 require vnet-s32.inc
 require llce.inc
+require ${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'recipes-kernel/linux/verifiedboot.inc', '', d)}
 
 # Since Kernel version 4.19, task 'do_merge_delta_config' requires that the cross
 # compiler is available in recipe's sysroot. In order to avoid any erros/warnings

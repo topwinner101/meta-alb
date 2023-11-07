@@ -22,6 +22,9 @@ LOCALVERSION = ""
 HSE_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'hse', 'recipes-bsp/u-boot/u-boot-nxp-hse.inc', '', d)}"
 include ${HSE_SUPPORT}
 
+VERIFIEDBOOT_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'recipes-bsp/u-boot/u-boot-nxp-verifiedboot.inc', '', d)}"
+include ${VERIFIEDBOOT_SUPPORT}
+
 DELTA_UBOOT_DEFCONFIG ?= ""
 
 # Enable Xen default boot if Xen enabled

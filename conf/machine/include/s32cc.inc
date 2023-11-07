@@ -26,6 +26,8 @@ require ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'conf/machine/inclu
 require ${@bb.utils.contains('DISTRO_FEATURES', 'm7boot', 'conf/machine/include/m7-boot.inc', 'conf/machine/include/atf.inc', d)}
 # Enable FIP Authentication
 require ${@bb.utils.contains('DISTRO_FEATURES', 'secboot', 'conf/machine/include/hse-secboot.inc', '', d)}
+# Enable Kernel Authentication
+require ${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'conf/machine/include/hse-verifiedboot.inc', '', d)}
 
 # Check whether to switch from SIUL2 drivers to SCMI ones
 SCMI_USE_SCMI_PINCTRL ??= "${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '1', '0', d)}"
