@@ -216,7 +216,7 @@ IMAGE_CMD:flashimage () {
 
         # Initialize the image file with all 0xff to optimize flashing
         cd ${FLASHIMAGE_DEPLOYDIR}
-        dd if=/dev/zero ibs=${FLASH_IBS} count=$(printf "%d" ${FLASHIMAGE_SIZE}) | tr "\000" "\377" >${FLASHIMAGE} 
+        dd if=/dev/zero ibs=$(printf "%d" ${FLASHIMAGE_SIZE_D}) count=1 | tr "\000" "\377" >${FLASHIMAGE} 
         ln -sf ${FLASHIMAGE} ${IMAGE_LINK_NAME}.flashimage
 
         generate_flashimage
