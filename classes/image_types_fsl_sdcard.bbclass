@@ -163,10 +163,6 @@ do_image_sdcard[depends] += " \
 	${@d.getVar('SDCARDIMAGE_ROOTFS_EXTRA2_FILE', True) and d.getVar('SDCARDIMAGE_ROOTFS_EXTRA2', True) + ':do_deploy' or ''} \
 "
 
-SDCARD_GENERATION_COMMAND:fsl-lsch3 = "generate_nxp_sdcard"
-SDCARD_GENERATION_COMMAND:fsl-lsch2 = "generate_nxp_sdcard"
-SDCARD_GENERATION_COMMAND:s32 = "generate_nxp_sdcard"
-
 # Add extra images in the boot partition
 add_extra_boot_img() {
 	BOOT_IMAGE_FILE="$1"
@@ -482,7 +478,7 @@ IMAGE_CMD:sdcard () {
 	generate_sdcardimage_entry "${SDCARDIMAGE_EXTRA8_FILE}" "SDCARDIMAGE_EXTRA8_OFFSET" "${SDCARDIMAGE_EXTRA8_OFFSET}" "${SDCARD}"
 	generate_sdcardimage_entry "${SDCARDIMAGE_EXTRA9_FILE}" "SDCARDIMAGE_EXTRA9_OFFSET" "${SDCARDIMAGE_EXTRA9_OFFSET}" "${SDCARD}"
 
-	${SDCARD_GENERATION_COMMAND} ${SDCARD_ROOTFS_REAL_START} ${SDCARD_ROOTFS_EXTRA1_START} ${SDCARD_ROOTFS_EXTRA2_START}
+	generate_nxp_sdcard ${SDCARD_ROOTFS_REAL_START} ${SDCARD_ROOTFS_EXTRA1_START} ${SDCARD_ROOTFS_EXTRA2_START}
 	cd -
 }
 
