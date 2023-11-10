@@ -179,7 +179,6 @@ generate_flashimage_entry() {
 generate_flashimage() {
         flash_regions=""
 
-        FLASHIMAGE_SIZE_D=$(printf "%d * 1024 * 1024\n" ${FLASHIMAGE_SIZE} | bc)
         FLASHIMAGE_BANK4_XOR=$(expr ${FLASHIMAGE_SIZE_D} / 2)
 
         generate_flashimage_entry "${FLASHIMAGE_RESET_FILE}"  "FLASHIMAGE_RESET_OFFSET"  "${FLASHIMAGE_RESET_OFFSET}"
@@ -199,20 +198,22 @@ generate_flashimage() {
 }
 
 IMAGE_CMD:flashimage () {
-        # we expect image size in Mb
-        FLASH_IBS="1M"
+        # we expect image size in MiB
+        FLASH_IBS="1048576"
         if [ -z "${FLASHIMAGE_SIZE}" ]; then
                 if [ -n "${FLASHIMAGE_ROOTFS_FILE}" ]; then
                         FLASHIMAGE_ROOTFS_SIZE=$(stat -L -c "%s" ${FLASHIMAGE_ROOTFS_FILE})
                         FLASHIMAGE_ROOTFS_SIZE_EXTRA=$(echo "$FLASHIMAGE_ROOTFS_SIZE+(16-$FLASHIMAGE_ROOTFS_SIZE%16)"| bc)
                         FLASHIMAGE_SIZE=$(expr ${FLASHIMAGE_ROOTFS_OFFSET} + $FLASHIMAGE_ROOTFS_SIZE_EXTRA)
-                        # computed size is not in Mb, so adjust the block size
+                        # computed size is not in MiB, so adjust the block size
                         FLASH_IBS="1"
                 else
                         bberror "FLASHIMAGE_SIZE is undefined. To use the 'flashimage' image it needs to be defined in MiB units."
                         exit 1
                 fi
         fi
+
+        FLASHIMAGE_SIZE_D=$(printf "%s * %s\n" ${FLASHIMAGE_SIZE} ${FLASH_IBS} | bc)
 
         # Initialize the image file with all 0xff to optimize flashing
         cd ${FLASHIMAGE_DEPLOYDIR}
