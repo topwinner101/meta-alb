@@ -194,7 +194,7 @@ add_extra_boot_img() {
 	BOOT_IMAGE_FILE="$1"
 	BOOT_IMAGE="$2"
 	if [ -n "${BOOT_IMAGE_FILE}" ]; then
-		mcopy -i ${BOOT_IMAGE} -s ${DEPLOY_DIR_IMAGE}/${BOOT_IMAGE_FILE} ::/${BOOT_IMAGE_FILE}
+		mcopy -i "${BOOT_IMAGE}" -s "${DEPLOY_DIR_IMAGE}/${BOOT_IMAGE_FILE}" "::/${BOOT_IMAGE_FILE}"
 	fi
 }
 
@@ -204,7 +204,7 @@ create_rootfs_partition () {
 	SDCARD_ROOTFS_SIZE="$2"
 	SDCARD_ROOTFS_NAME="$3"
 	if [ -n "${SDCARD_ROOTFS_NAME}" ]; then
-		parted -s ${SDCARD} unit KiB mkpart primary ${SDCARD_ROOTFS_START} $(printf "%u + %u\n" ${SDCARD_ROOTFS_START} ${SDCARD_ROOTFS_SIZE} | bc)
+		parted -s "${SDCARD}" unit KiB mkpart primary ${SDCARD_ROOTFS_START} $(printf "%u + %u\n" ${SDCARD_ROOTFS_START} ${SDCARD_ROOTFS_SIZE} | bc)
 	fi
 }
 
@@ -228,7 +228,7 @@ update_rootfs_name () {
 	img=$(readlink -f "${img}" || true)
 
 	if [ -f "${img}" ]; then
-		printf "%s" "${img}"
+		SDCARD_ROOTFS_NAME="${img}"
 	else
 		bberror "Rootfs file does not exist or invalid link: ${img}"
 	fi
@@ -242,7 +242,11 @@ write_rootfs_partition () {
 	SDCARD_ROOTFS_NAME="$3"
 
 	if [ -n "${SDCARD_ROOTFS_NAME}" -a ! -f "${SDCARD_ROOTFS_NAME}" ]; then
-		SDCARD_ROOTFS_NAME=$(update_rootfs_name ${SDCARD_ROOTFS_NAME})
+		# bitbake parsing doesn't like 'var="$(func <args>)"'
+		# and optimizes func() away. So we can't return the
+		# result when quoting properly. Net result is that we
+		# modify the variable in the function directly
+		update_rootfs_name ${SDCARD_ROOTFS_NAME}
 	fi
 
 	if [ -n "${SDCARD_ROOTFS_NAME}" ]; then
@@ -257,7 +261,7 @@ _generate_boot_image() {
 	local boot_part=$1
 
 	# Create boot partition image
-	BOOT_BLOCKS=$(LC_ALL=C parted -s ${SDCARD} unit b print \
+	BOOT_BLOCKS=$(LC_ALL=C parted -s "${SDCARD}" unit b print \
 	                  | awk "/ $boot_part / { print substr(\$4, 1, length(\$4 -1)) / 1024 }")
 
 	# mkdosfs will sometimes use FAT16 when it is not appropriate,
@@ -267,25 +271,25 @@ _generate_boot_image() {
 		FATSIZE="-F 32"
 	fi
 
-	rm -f ${WORKDIR}/boot.img
-	bvid=`echo ${BOOTDD_VOLUME_ID} | head -c 10`
-	mkfs.vfat -n "$bvid" -S 512 ${FATSIZE} -C ${WORKDIR}/boot.img $BOOT_BLOCKS
+	rm -f "${WORKDIR}/boot.img"
+	bvid="`echo ${BOOTDD_VOLUME_ID} | head -c 10`"
+	mkfs.vfat -n "$bvid" -S 512 ${FATSIZE} -C "${WORKDIR}/boot.img" $BOOT_BLOCKS
 
-	mcopy -i ${WORKDIR}/boot.img -s ${DEPLOY_DIR_IMAGE}/${UBOOT_KERNEL_IMAGETYPE}-${MACHINE}.bin ::/${UBOOT_KERNEL_IMAGETYPE}
+	mcopy -i "${WORKDIR}/boot.img" -s "${DEPLOY_DIR_IMAGE}/${UBOOT_KERNEL_IMAGETYPE}-${MACHINE}.bin" "::/${UBOOT_KERNEL_IMAGETYPE}"
 
 	# Copy boot scripts
 	for item in ${BOOT_SCRIPTS}; do
-		src=`echo $item | awk -F':' '{ print $1 }'`
-		dst=`echo $item | awk -F':' '{ print $2 }'`
+		src="`echo $item | awk -F':' '{ print $1 }'`"
+		dst="`echo $item | awk -F':' '{ print $2 }'`"
 
-		mcopy -i ${WORKDIR}/boot.img -s ${DEPLOY_DIR_IMAGE}/$src ::/$dst
+		mcopy -i "${WORKDIR}/boot.img" -s "${DEPLOY_DIR_IMAGE}/$src" "::/$dst"
 	done
 
 	# Copy device tree file
 	if test -n "${KERNEL_DEVICETREE}"; then
 		kernel_bin="`readlink ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-${MACHINE}.bin`"
 		for DTS_FILE in ${KERNEL_DEVICETREE}; do
-			DTS_BASE_NAME=`basename ${DTS_FILE} | awk -F "." '{print $1}'`
+			DTS_BASE_NAME="`basename ${DTS_FILE} | awk -F "." '{print $1}'`"
 			DTB_PATH=""
 			kernel_bin_for_dtb=""
 			if [ -e "${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-${DTS_BASE_NAME}.dtb" ]; then
@@ -298,8 +302,8 @@ _generate_boot_image() {
 			fi
 			if [ -n "$DTB_PATH" ]; then
 				# match dtb and kernel image by timestamp
-				if [ $kernel_bin = $kernel_bin_for_dtb ]; then
-					mcopy -i ${WORKDIR}/boot.img -s "$DTB_PATH" ::/${DTS_BASE_NAME}.dtb
+				if [ "$kernel_bin" = "$kernel_bin_for_dtb" ]; then
+					mcopy -i "${WORKDIR}/boot.img" -s "$DTB_PATH" "::/${DTS_BASE_NAME}.dtb"
 				fi
 			else
 				bbfatal "${DTS_FILE} does not exist."
@@ -309,8 +313,8 @@ _generate_boot_image() {
 
 	# Copy extlinux.conf to images that have U-Boot Extlinux support.
 	if [ "${UBOOT_EXTLINUX}" = "1" ]; then
-		mmd -i ${WORKDIR}/boot.img ::/extlinux
-		mcopy -i ${WORKDIR}/boot.img -s ${DEPLOY_DIR_IMAGE}/extlinux.conf ::/extlinux/extlinux.conf
+		mmd -i "${WORKDIR}/boot.img" ::/extlinux
+		mcopy -i "${WORKDIR}/boot.img" -s "${DEPLOY_DIR_IMAGE}/extlinux.conf" ::/extlinux/extlinux.conf
 	fi
 
 	# Add extra boot images in the SDCARD boot partition
@@ -401,14 +405,14 @@ generate_nxp_sdcard () {
 	SDCARD_ROOTFS_EXTRA2_START="$3"
 
 	# Create partition table
-	parted -s ${SDCARD} mklabel msdos
+	parted -s "${SDCARD}" mklabel msdos
 	if [ ${BOOT_SPACE_ALIGNED} -gt 0 ]; then
-		parted -s ${SDCARD} unit KiB mkpart primary fat32 ${IMAGE_ROOTFS_ALIGNMENT} $(printf "%u + %u\n" ${IMAGE_ROOTFS_ALIGNMENT} ${BOOT_SPACE_ALIGNED} | bc)
+		parted -s "${SDCARD}" unit KiB mkpart primary fat32 ${IMAGE_ROOTFS_ALIGNMENT} $(printf "%u + %u\n" ${IMAGE_ROOTFS_ALIGNMENT} ${BOOT_SPACE_ALIGNED} | bc)
 	fi
-	create_rootfs_partition ${SDCARD_ROOTFS_REAL_START} ${ROOTFS_SIZE} ${SDCARD_ROOTFS_REAL}
-	create_rootfs_partition ${SDCARD_ROOTFS_EXTRA1_START} ${SDCARD_ROOTFS_EXTRA1_SIZE} ${SDCARD_ROOTFS_EXTRA1_FILE}
-	create_rootfs_partition ${SDCARD_ROOTFS_EXTRA2_START} ${SDCARD_ROOTFS_EXTRA2_SIZE} ${SDCARD_ROOTFS_EXTRA2_FILE}
-	parted ${SDCARD} print
+	create_rootfs_partition ${SDCARD_ROOTFS_REAL_START} ${ROOTFS_SIZE} "${SDCARD_ROOTFS_REAL}"
+	create_rootfs_partition ${SDCARD_ROOTFS_EXTRA1_START} ${SDCARD_ROOTFS_EXTRA1_SIZE} "${SDCARD_ROOTFS_EXTRA1_FILE}"
+	create_rootfs_partition ${SDCARD_ROOTFS_EXTRA2_START} ${SDCARD_ROOTFS_EXTRA2_SIZE} "${SDCARD_ROOTFS_EXTRA2_FILE}"
+	parted "${SDCARD}" print
 
 	# Fill optional Layerscape RCW into the boot block
 	if [ -n "${SDCARD_RCW_NAME}" ]; then
@@ -421,12 +425,11 @@ generate_nxp_sdcard () {
 	if [ ${BOOT_SPACE_ALIGNED} -gt 0 ]; then
 		_generate_boot_image 1
 		generate_sdcardimage_entry_raw "${WORKDIR}/boot.img" $(printf "%u * 1024\n" ${IMAGE_ROOTFS_ALIGNMENT} | bc)
-
 	fi
 
-	write_rootfs_partition ${SDCARD_ROOTFS_REAL_START} ${ROOTFS_SIZE} ${SDCARD_ROOTFS_REAL}
-	write_rootfs_partition ${SDCARD_ROOTFS_EXTRA1_START} ${SDCARD_ROOTFS_EXTRA1_SIZE} ${SDCARD_ROOTFS_EXTRA1_FILE}
-	write_rootfs_partition ${SDCARD_ROOTFS_EXTRA2_START} ${SDCARD_ROOTFS_EXTRA2_SIZE} ${SDCARD_ROOTFS_EXTRA2_FILE}
+	write_rootfs_partition ${SDCARD_ROOTFS_REAL_START} ${ROOTFS_SIZE} "${SDCARD_ROOTFS_REAL}"
+	write_rootfs_partition ${SDCARD_ROOTFS_EXTRA1_START} ${SDCARD_ROOTFS_EXTRA1_SIZE} "${SDCARD_ROOTFS_EXTRA1_FILE}"
+	write_rootfs_partition ${SDCARD_ROOTFS_EXTRA2_START} ${SDCARD_ROOTFS_EXTRA2_SIZE} "${SDCARD_ROOTFS_EXTRA2_FILE}"
 }
 
 IMAGE_CMD:sdcard () {
@@ -473,10 +476,10 @@ IMAGE_CMD:sdcard () {
 		SDCARD_ROOTFS_EXTRA2_START="0"
 	fi
 
-	cd ${IMGDEPLOYDIR}
+	cd "${IMGDEPLOYDIR}"
 
 	# Initialize a sparse file
-	dd if=/dev/zero of=${SDCARD} bs=1 count=0 oflag=seek_bytes seek=$(printf "%u * 1024\n" ${SDCARD_SIZE} | bc)
+	dd if=/dev/zero "of=${SDCARD}" bs=1 count=0 oflag=seek_bytes seek=$(printf "%u * 1024\n" ${SDCARD_SIZE} | bc)
 
 	# Additional elements for the raw image, copying the approach of the flashimage class
 	generate_sdcardimage_entry "${SDCARDIMAGE_EXTRA1_FILE}" "SDCARDIMAGE_EXTRA1_OFFSET" "${SDCARDIMAGE_EXTRA1_OFFSET}"
