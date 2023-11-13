@@ -310,7 +310,7 @@ _burn_bootloader() {
 		else
 			if [ "${UBOOT_BOOTSPACE_OFFSET}" = "0" ]; then
 				# write IVT
-				dd if=${DEPLOY_DIR_IMAGE}/${UBOOT_NAME_SDCARD} of=${SDCARD} conv=notrunc seek=0 bs=256 count=1
+				dd if=${DEPLOY_DIR_IMAGE}/${UBOOT_NAME_SDCARD} of=${SDCARD} conv=notrunc bs=256 count=1
 				# write the rest of u-boot code
 				dd if=${DEPLOY_DIR_IMAGE}/${UBOOT_NAME_SDCARD} of=${SDCARD} conv=notrunc bs=512 seek=1 skip=1
 			else
