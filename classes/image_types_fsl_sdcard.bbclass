@@ -180,7 +180,7 @@ create_rootfs_partition () {
 	SDCARD_ROOTFS_SIZE="$2"
 	SDCARD_ROOTFS_NAME="$3"
 	if [ -n "${SDCARD_ROOTFS_NAME}" ]; then
-		parted -s ${SDCARD} unit KiB mkpart primary ${SDCARD_ROOTFS_START} $(expr ${SDCARD_ROOTFS_START} + ${SDCARD_ROOTFS_SIZE})
+		parted -s ${SDCARD} unit KiB mkpart primary ${SDCARD_ROOTFS_START} $(printf "%u + %u\n" ${SDCARD_ROOTFS_START} ${SDCARD_ROOTFS_SIZE} | bc)
 	fi
 }
 
@@ -239,7 +239,7 @@ _generate_boot_image() {
 	# mkdosfs will sometimes use FAT16 when it is not appropriate,
 	# resulting in a boot failure from SYSLINUX. Use FAT32 for
 	# images larger than 512MB, otherwise let mkdosfs decide.
-	if [ $(expr $BOOT_BLOCKS / 1024) -gt 512 ]; then
+	if [ $(printf "%u / 1024\n" $BOOT_BLOCKS | bc) -gt 512 ]; then
 		FATSIZE="-F 32"
 	fi
 
@@ -379,7 +379,7 @@ generate_nxp_sdcard () {
 	# Create partition table
 	parted -s ${SDCARD} mklabel msdos
 	if [ ${BOOT_SPACE_ALIGNED} -gt 0 ]; then
-		parted -s ${SDCARD} unit KiB mkpart primary fat32 ${IMAGE_ROOTFS_ALIGNMENT} $(expr ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED})
+		parted -s ${SDCARD} unit KiB mkpart primary fat32 ${IMAGE_ROOTFS_ALIGNMENT} $(printf "%u + %u\n" ${IMAGE_ROOTFS_ALIGNMENT} ${BOOT_SPACE_ALIGNED} | bc)
 	fi
 	create_rootfs_partition ${SDCARD_ROOTFS_REAL_START} ${ROOTFS_SIZE} ${SDCARD_ROOTFS_REAL}
 	create_rootfs_partition ${SDCARD_ROOTFS_EXTRA1_START} ${SDCARD_ROOTFS_EXTRA1_SIZE} ${SDCARD_ROOTFS_EXTRA1_FILE}
@@ -422,44 +422,43 @@ generate_sdcardimage_entry() {
 IMAGE_CMD:sdcard () {
 
 	if [ -n "${UBOOT_BOOTSPACE_OFFSET}" ]; then
-		UBOOT_BOOTSPACE_OFFSET=$(printf "%d" ${UBOOT_BOOTSPACE_OFFSET})
+		UBOOT_BOOTSPACE_OFFSET=$(printf "%u" ${UBOOT_BOOTSPACE_OFFSET})
 	else
-		UBOOT_BOOTSPACE_OFFSET=$(expr ${UBOOT_BOOTSPACE_SEEK} \* 512)
+		UBOOT_BOOTSPACE_OFFSET=$(printf "%u * 512\n" ${UBOOT_BOOTSPACE_SEEK} | bc)
 	fi
 
 	# Align boot partition and calculate total SD card image size
 	# No FAT partition will be created if BOOT_SPACE is 0.
-	BOOT_SPACE_ALIGNED=$(expr ${BOOT_SPACE} + ${BASE_IMAGE_ROOTFS_ALIGNMENT} - 1)
-	BOOT_SPACE_ALIGNED=$(expr ${BOOT_SPACE_ALIGNED} - ${BOOT_SPACE_ALIGNED} % ${BASE_IMAGE_ROOTFS_ALIGNMENT} || true)
+	BOOT_SPACE_ALIGNED=$(printf "s=%u;a=%u;x=s+a-1;x-x%%a\n" ${BOOT_SPACE} ${BASE_IMAGE_ROOTFS_ALIGNMENT} | bc)
 
 	# If the size has not been preset, we default to flash image
 	# sizes if available turned into [KiB] or to a hardcoded mini
 	# default of 4MB.
 	if [ -z "${IMAGE_ROOTFS_ALIGNMENT}" ]; then
 		if [ -n "${FLASHIMAGE_SIZE}" ]; then
-			IMAGE_ROOTFS_ALIGNMENT=$(expr ${FLASHIMAGE_SIZE} \* 1024)
+			IMAGE_ROOTFS_ALIGNMENT=$(printf "%u * 1024\n" ${FLASHIMAGE_SIZE} | bc)
 		else
 			IMAGE_ROOTFS_ALIGNMENT=${BASE_IMAGE_ROOTFS_ALIGNMENT}
 		fi
 	fi
 
 	# Compute final size of SDCard image and start offset of each rootfs partition
-	SDCARD_SIZE=$(expr ${IMAGE_ROOTFS_ALIGNMENT} + ${BOOT_SPACE_ALIGNED})
+	SDCARD_SIZE=$(printf "%u + %u\n" ${IMAGE_ROOTFS_ALIGNMENT} ${BOOT_SPACE_ALIGNED} | bc)
 	if [ -n "${SDCARD_ROOTFS_REAL}" ]; then
 		SDCARD_ROOTFS_REAL_START=${SDCARD_SIZE}
-		SDCARD_SIZE=$(expr ${SDCARD_SIZE} + ${ROOTFS_SIZE} + ${BASE_IMAGE_ROOTFS_ALIGNMENT})
+		SDCARD_SIZE=$(printf "%u + %u + %u\n" ${SDCARD_SIZE} ${ROOTFS_SIZE} ${BASE_IMAGE_ROOTFS_ALIGNMENT} | bc)
 	else
 		SDCARD_ROOTFS_REAL_START="0"
 	fi
 	if [ -n "${SDCARD_ROOTFS_EXTRA1_FILE}" ]; then
 		SDCARD_ROOTFS_EXTRA1_START=${SDCARD_SIZE}
-		SDCARD_SIZE=$(expr ${SDCARD_SIZE} + ${SDCARD_ROOTFS_EXTRA1_SIZE} + ${BASE_IMAGE_ROOTFS_ALIGNMENT})
+		SDCARD_SIZE=$(printf "%u + %u + %u\n"  ${SDCARD_SIZE} ${SDCARD_ROOTFS_EXTRA1_SIZE} ${BASE_IMAGE_ROOTFS_ALIGNMENT} | bc)
 	else
 		SDCARD_ROOTFS_EXTRA1_START="0"
 	fi
 	if [ -n "${SDCARD_ROOTFS_EXTRA2_FILE}" ]; then
 		SDCARD_ROOTFS_EXTRA2_START=${SDCARD_SIZE}
-		SDCARD_SIZE=$(expr ${SDCARD_SIZE} + ${SDCARD_ROOTFS_EXTRA2_SIZE} + ${BASE_IMAGE_ROOTFS_ALIGNMENT})
+		SDCARD_SIZE=$(printf "%u + %u + %u\n"  ${SDCARD_SIZE} ${SDCARD_ROOTFS_EXTRA2_SIZE} ${BASE_IMAGE_ROOTFS_ALIGNMENT} | bc)
 	else
 		SDCARD_ROOTFS_EXTRA2_START="0"
 	fi
