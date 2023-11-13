@@ -202,13 +202,13 @@ IMAGE_CMD:flashimage () {
         FLASH_IBS="1048576"
         if [ -z "${FLASHIMAGE_SIZE}" ]; then
                 if [ -n "${FLASHIMAGE_ROOTFS_FILE}" ]; then
-                        FLASHIMAGE_ROOTFS_SIZE=$(stat -L -c "%s" ${FLASHIMAGE_ROOTFS_FILE})
+                        FLASHIMAGE_ROOTFS_SIZE=$(stat -L -c "%s" "${FLASHIMAGE_ROOTFS_FILE}")
                         FLASHIMAGE_ROOTFS_SIZE_EXTRA=$(echo "$FLASHIMAGE_ROOTFS_SIZE+(16-$FLASHIMAGE_ROOTFS_SIZE%16)"| bc)
                         FLASHIMAGE_SIZE=$(expr ${FLASHIMAGE_ROOTFS_OFFSET} + $FLASHIMAGE_ROOTFS_SIZE_EXTRA)
                         # computed size is not in MiB, so adjust the block size
                         FLASH_IBS="1"
                 else
-                        bberror "FLASHIMAGE_SIZE is undefined. To use the 'flashimage' image it needs to be defined in MiB units."
+                        bberror "FLASHIMAGE_SIZE is undefined. To use the flash image it needs to be defined in decimal MiB units."
                         exit 1
                 fi
         fi
@@ -217,8 +217,8 @@ IMAGE_CMD:flashimage () {
 
         # Initialize the image file with all 0xff to optimize flashing
         cd ${FLASHIMAGE_DEPLOYDIR}
-        dd if=/dev/zero ibs=$(printf "%d" ${FLASHIMAGE_SIZE_D}) count=1 | tr "\000" "\377" >${FLASHIMAGE} 
-        ln -sf ${FLASHIMAGE} ${IMAGE_LINK_NAME}.flashimage
+        dd if=/dev/zero ibs=$(printf "%d" ${FLASHIMAGE_SIZE_D}) count=1 | tr "\000" "\377" > "${FLASHIMAGE}"
+        ln -sf "${FLASHIMAGE}" "${IMAGE_LINK_NAME}.flashimage"
 
         generate_flashimage
 
