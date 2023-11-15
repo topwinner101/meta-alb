@@ -9,6 +9,7 @@
 # Heinz Wrobel <Heinz.Wrobel@nxp.com>
 #
 inherit image_types
+inherit rawimageutils
 inherit ${@bb.utils.contains('FLASHIMAGE_DYNAMIC_OFFSETS', '1', 's32cc-flash-offsets', '', d)}
 IMAGE_TYPES += "flashimage"
 
@@ -95,92 +96,19 @@ python __anonymous () {
 }
 
 
-add_flash_region () {
-        # Add a new flash region for writing an image
-        # Check if there is an overlap with an existing region
-        start="$1"
-        size="$2"
-        name="$3"
-
-        end=$(printf "%d + %d\n" ${start} ${size} | bc)
-
-        for entry in ${flash_regions}; do
-                start0=$(printf "%s" ${entry} | cut -d '-' -f1)
-                end0=$(printf "%s" ${entry} | cut -d '-' -f2)
-                if [ "${start}" -lt "${end0}" ] && [ "${end}" -gt "${start0}" ]; then
-                        error_str=$(printf "%s (0x%x - 0x%x) overlaps with (0x%x - 0x%x)" "${name}" "${start}" "${end}" "${start0}" "${end0}")
-                        bberror "Flash regions overlap: ${error_str}"
-                        exit 1
-                fi
-        done
-
-        # Save regions in string using format:
-        #     start0-end0 start1-end1 ...
-        flash_regions="${flash_regions} ${start}-${end}"
-}
-
 #
 # Create an image that can by written to flash directly
 # The input files are to be found in ${DEPLOY_DIR_IMAGE}.
 #
 generate_flashimage_entry() {
-        FLASHIMAGE_FILE="$1"
-        FLASHIMAGE_FILE_OFFSET_NAME="$2"
-        FLASHIMAGE_FILE_OFFSET_VARIABLE="$3"
-        FLASHIMAGE_FILE_OFFSET=$(printf "%d" "$3")
-
-        if [ -n "${FLASHIMAGE_FILE}" ]; then
-                if [ -z "${FLASHIMAGE_FILE_OFFSET_VARIABLE}" ]; then
-                    bberror "${FLASHIMAGE_FILE} is set but offset ${FLASHIMAGE_FILE_OFFSET_NAME} for this file inside the flashimage is undefined"
-                    exit 1
-                fi
-
-                if [ -z "${FLASHIMAGE_FILE_OFFSET}" ]; then
-                        bberror "${FLASHIMAGE_FILE_OFFSET_NAME} is undefined. To use the 'flashimage' image it needs to be defined as byte offset."
-                        exit 1
-                fi
-
-                if [ ! -e "${FLASHIMAGE_FILE}" ]; then
-                        FLASHIMAGE_FILE="${DEPLOY_DIR_IMAGE}/${FLASHIMAGE_FILE}"
-                fi
-
-                FLASHIMAGE_FILE_SIZE=`stat -L -c "%s" "${FLASHIMAGE_FILE}"`
-                FLASHIMAGE_MAX=$(printf "%d + %d\n" ${FLASHIMAGE_FILE_OFFSET} ${FLASHIMAGE_FILE_SIZE} | bc)
-
-                if [ "${FLASHIMAGE_BANK4}" = "yes" ]; then
-                        if [ ${FLASHIMAGE_FILE_OFFSET} -lt ${FLASHIMAGE_BANK4_XOR} ]; then
-                                if [ ${FLASHIMAGE_MAX} -gt ${FLASHIMAGE_BANK4_XOR} ]; then
-                                        error_str=$(printf "%s is reaching into flash bank 4 to 0x%x. Please reduce size or turn off bank 4 in the config!" "${FLASHIMAGE_FILE}" ${FLASHIMAGE_MAX})
-                                        bberror "${error_str}"
-                                        exit 1
-                                fi
-                        fi
-                fi
-
-                # add region for checking overlap with existing ones
-                add_flash_region "${FLASHIMAGE_FILE_OFFSET}" "${FLASHIMAGE_FILE_SIZE}" "${FLASHIMAGE_FILE_OFFSET_NAME}"
-
-                bbnote "Generating flashimage entry at ${FLASHIMAGE_FILE_OFFSET} for ${FLASHIMAGE_FILE}"
-                dd if=${FLASHIMAGE_FILE} of=${FLASHIMAGE} conv=notrunc,fsync bs=32K oflag=seek_bytes seek=${FLASHIMAGE_FILE_OFFSET}
-                if [ "${FLASHIMAGE_BANK4}" = "yes" ]; then
-                        # Really nasty hack to avoid the problem of expr return non-zero on zero results
-                        # and it's inability to support any xor operation.
-                        # This only works because our xor operation really is half the overall size.
-                        FLASHIMAGE_TMP=$(printf "(%d + %d) %% %d\n" ${FLASHIMAGE_FILE_OFFSET} ${FLASHIMAGE_BANK4_XOR} ${FLASHIMAGE_SIZE_D} | bc)
-
-                        add_flash_region "${FLASHIMAGE_TMP}" "${FLASHIMAGE_FILE_SIZE}" "${FLASHIMAGE_FILE_OFFSET_NAME}"
-
-                        bbnote "Generating flashimage entry at ${FLASHIMAGE_TMP} for ${FLASHIMAGE_FILE}"
-                        dd if=${FLASHIMAGE_FILE} of=${FLASHIMAGE} conv=notrunc,fsync bs=32K oflag=seek_bytes seek=${FLASHIMAGE_TMP}
-                fi
+        file="$1"
+        if [ -n "${file}" ]; then
+                file="${DEPLOY_DIR_IMAGE}/${file}"
+                rawimage_generate_entry "${file}" "${FLASHIMAGE}" "$2" "$3"
         fi
 }
 
 generate_flashimage() {
-        flash_regions=""
-
-        FLASHIMAGE_BANK4_XOR=$(expr ${FLASHIMAGE_SIZE_D} / 2)
-
         generate_flashimage_entry "${FLASHIMAGE_RESET_FILE}"  "FLASHIMAGE_RESET_OFFSET"  "${FLASHIMAGE_RESET_OFFSET}"
         generate_flashimage_entry "${FLASHIMAGE_FIP_FILE}"    "FLASHIMAGE_FIP_OFFSET"  "${FLASHIMAGE_FIP_OFFSET}"
         generate_flashimage_entry "${FLASHIMAGE_KERNEL_FILE}" "FLASHIMAGE_KERNEL_OFFSET" "${FLASHIMAGE_KERNEL_OFFSET}"
@@ -214,6 +142,7 @@ IMAGE_CMD:flashimage () {
         fi
 
         FLASHIMAGE_SIZE_D=$(printf "%s * %s\n" ${FLASHIMAGE_SIZE} ${FLASH_IBS} | bc)
+        rawimage_initutils "flash image" "${FLASHIMAGE_BANK4}" ${FLASHIMAGE_SIZE_D};
 
         # Initialize the image file with all 0xff to optimize flashing
         cd ${FLASHIMAGE_DEPLOYDIR}

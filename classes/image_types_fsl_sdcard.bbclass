@@ -1,4 +1,5 @@
 inherit image_types_fsl
+inherit rawimageutils
 
 IMAGE_TYPES += "sdcard"
 
@@ -167,12 +168,10 @@ do_image_sdcard[depends] += " \
 
 generate_sdcardimage_entry_raw() {
         GSDE_IMAGE_FILE="$1"
-        GSDE_IMAGE_FILE_OFFSET="$2"
-        ddopts="$3"
 
         if [ -n "${GSDE_IMAGE_FILE}" ]; then
-                bbnote "Generating sdcard entry at 0x$(printf "%x" ${GSDE_IMAGE_FILE_OFFSET}) for ${GSDE_IMAGE_FILE}"
-                dd "if=${GSDE_IMAGE_FILE}" "of=${SDCARD}" conv=notrunc,fsync bs=32K oflag=seek_bytes seek=$(printf "%u" ${GSDE_IMAGE_FILE_OFFSET}) ${ddopts}
+                bbnote "Generating sdcard entry at 0x$(printf "%x" $3) for ${GSDE_IMAGE_FILE}"
+                rawimage_generate_entry "${GSDE_IMAGE_FILE}" "${SDCARD}" "$2" "$3" "$4" "$5"
         fi
 }
 
@@ -185,7 +184,7 @@ generate_sdcardimage_entry() {
                         bberror "$2 is undefined. To use the 'sdcard' image it needs to be defined as byte offset."
                         exit 1
                 fi
-                generate_sdcardimage_entry_raw "${file}" "$3" "$4"
+                generate_sdcardimage_entry_raw "${file}" "$2" "$3" "$4" "$5"
         fi
 }
 
@@ -250,7 +249,7 @@ write_rootfs_partition () {
 	fi
 
 	if [ -n "${SDCARD_ROOTFS_NAME}" ]; then
-		generate_sdcardimage_entry_raw "${SDCARD_ROOTFS_NAME}" $(printf "%u * 1024\n" ${SDCARD_ROOTFS_START} | bc)
+		generate_sdcardimage_entry_raw "${SDCARD_ROOTFS_NAME}" "" $(printf "%u * 1024\n" ${SDCARD_ROOTFS_START} | bc)
 	fi
 }
 
@@ -339,10 +338,12 @@ _burn_bootloader() {
 				generate_sdcardimage_entry "${UBOOT_NAME_SDCARD}" "" $(printf "%u + %u\n" ${UBOOT_BOOTSPACE_OFFSET} 0x11000 | bc)
 		else
 			if [ "${UBOOT_BOOTSPACE_OFFSET}" = "0" ]; then
+				usize=$(stat -L -c "%s" "${DEPLOY_DIR_IMAGE}/${UBOOT_NAME_SDCARD}")
 				# write IVT
-				generate_sdcardimage_entry "${UBOOT_NAME_SDCARD}" "" 0 "bs=256 count=1"
+				generate_sdcardimage_entry "${UBOOT_NAME_SDCARD}" "" 0 "bs=256 count=1" 256
 				# write the rest of u-boot code
-				generate_sdcardimage_entry "${UBOOT_NAME_SDCARD}" "" 512 "iflag=skip_bytes skip=512"
+				usize=$(printf "%u - 512\n" ${usize} | bc)
+				generate_sdcardimage_entry "${UBOOT_NAME_SDCARD}" "" 512 "iflag=skip_bytes skip=512" ${usize}
 			else
 				generate_sdcardimage_entry "${UBOOT_NAME_SDCARD}" "" $(printf "%u" ${UBOOT_BOOTSPACE_OFFSET})
 			fi
@@ -424,7 +425,7 @@ generate_nxp_sdcard () {
 	# Burn Partitions
 	if [ ${BOOT_SPACE_ALIGNED} -gt 0 ]; then
 		_generate_boot_image 1
-		generate_sdcardimage_entry_raw "${WORKDIR}/boot.img" $(printf "%u * 1024\n" ${IMAGE_ROOTFS_ALIGNMENT} | bc)
+		generate_sdcardimage_entry_raw "${WORKDIR}/boot.img" "" $(printf "%u * 1024\n" ${IMAGE_ROOTFS_ALIGNMENT} | bc)
 	fi
 
 	write_rootfs_partition ${SDCARD_ROOTFS_REAL_START} ${ROOTFS_SIZE} "${SDCARD_ROOTFS_REAL}"
@@ -479,7 +480,10 @@ IMAGE_CMD:sdcard () {
 	cd "${IMGDEPLOYDIR}"
 
 	# Initialize a sparse file
-	dd if=/dev/zero "of=${SDCARD}" bs=1 count=0 oflag=seek_bytes seek=$(printf "%u * 1024\n" ${SDCARD_SIZE} | bc)
+	SDIMAGE_SIZE_D=$(printf "%u * 1024\n" ${SDCARD_SIZE} | bc)
+	dd if=/dev/zero "of=${SDCARD}" bs=1 count=0 oflag=seek_bytes seek=${SDIMAGE_SIZE_D}
+
+	rawimage_initutils "SD card/eMMC image" "no" ${SDIMAGE_SIZE_D};
 
 	# Additional elements for the raw image, copying the approach of the flashimage class
 	generate_sdcardimage_entry "${SDCARDIMAGE_EXTRA1_FILE}" "SDCARDIMAGE_EXTRA1_OFFSET" "${SDCARDIMAGE_EXTRA1_OFFSET}"
