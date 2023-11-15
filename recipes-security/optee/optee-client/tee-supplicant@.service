@@ -1,5 +1,5 @@
 [Unit]
-Description=TEE Supplicant
+Description=TEE Supplicant on %i
 
 [Service]
 User=root

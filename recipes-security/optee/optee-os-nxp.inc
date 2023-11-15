@@ -2,12 +2,16 @@ require optee-nxp.inc
 
 MAJ_VER = "${@oe.utils.trim_version("${PV}", 2)}"
 
-SRCREV = "7ee2ac6d54cd4600c60a60dde1288617d292eacb"
+SRCREV = "2a5b1d1232f582056184367fb58a425ac7478ec6"
 
 URL ?= "git://github.com/nxp-auto-linux/optee_os;protocol=https"
 BRANCH ?= "${RELEASE_BASE}-${MAJ_VER}"
 SRC_URI = "\
     ${URL};branch=${BRANCH} \
+    file://0001-allow-setting-sysroot-for-libgcc-lookup.patch \
+    file://0002-core-Define-section-attributes-for-clang.patch \
+    file://0003-optee-enable-clang-support.patch \
+    file://0004-core-link-add-no-warn-rwx-segments.patch \
 "
 
 DEPENDS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'hse', 'hse-firmware', '', d)}"
