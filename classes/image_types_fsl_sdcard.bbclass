@@ -13,6 +13,7 @@ UBOOT_TYPE_SDCARD ?= "sdcard"
 UBOOT_BASENAME_SDCARD ?= "u-boot"
 UBOOT_NAME_SDCARD ?= "${UBOOT_BASENAME_SDCARD}-${MACHINE}${UBOOT_REALSUFFIX_SDCARD}-${UBOOT_TYPE_SDCARD}"
 UBOOT_KERNEL_IMAGETYPE ?= "${KERNEL_IMAGETYPE}"
+UBOOT_KERNEL_RECIPE ?= "virtual/kernel"
 UBOOT_BOOTSPACE_SEEK ?= "2"
 
 UBOOT_ENV_SDCARD_OFFSET ?= ""
@@ -136,6 +137,11 @@ def get_extra_pkgs_deploy(d):
         return ":do_deploy ".join(get_pkgs_from_extra_files(d)) + ":do_deploy"
     return ""
 
+# We do not need to rely on HOSTTOOLS
+do_image_sdcard[depends] += "mtools-native:do_populate_sysroot parted-native:do_populate_sysroot dosfstools-native:do_populate_sysroot"
+
+# To support use of KERNEL_IMAGETYPE based access
+do_image_sdcard[depends] += "${UBOOT_KERNEL_RECIPE}:do_deploy"
 do_image_sdcard[depends] += " \
 	${@d.getVar('SDCARD_RCW', True) and d.getVar('SDCARD_RCW', True) + ':do_deploy' or ''} \
 	${@d.getVar('IMAGE_BOOTLOADER', True) and d.getVar('IMAGE_BOOTLOADER_RECIPE', True) + ':do_deploy' or ''} \
