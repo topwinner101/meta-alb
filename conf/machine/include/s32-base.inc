@@ -16,9 +16,6 @@ BOOT_SPACE ?= "65536"
 # required for u-boot
 HOSTTOOLS += "comm"
 
-# required for sdcard deploy
-HOSTTOOLS += "parted mkfs.vfat mcopy"
-
 # S32 BSP default providers
 PREFERRED_PROVIDER_u-boot ?= "u-boot-s32"
 PREFERRED_PROVIDER_virtual/bootloader ?= "u-boot-s32"
