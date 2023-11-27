@@ -108,6 +108,8 @@ APTGET_EXTRA_PACKAGES += " \
     pymacs \
 \
     qgit \
+\
+    lm-sensors \
 "
 
 # The following packages are apparently not mainstream enough to be
