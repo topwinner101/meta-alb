@@ -58,6 +58,10 @@ IMAGE_INSTALL:append:ls2084abbmini = " \
     kvaser \
 "
 
+IMAGE_INSTALL:append:s32cc = " \
+   aquantia-firmware-utility \
+"
+
 APTGET_EXTRA_PACKAGES += " \
     aptitude \
     gcc g++ cpp \
