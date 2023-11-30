@@ -1,10 +1,9 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 
 COMMONSRC_URI = " \
-    file://0001-kernel-Added-BB-Mini-device-tree.patch \
-    file://0001-linux-qoriq-Specific-DTS-for-the-LS2084A-based-BlueB.patch \
-    file://0001-linux-qoriq-BlueBox-1-2-dts-was-broken-for-Eth-PHYs.patch \
-    file://0001-linux-qoriq-dts-support-for-BlueBox3.patch \
+    file://0001-Device-Tree-for-BB-Mini-aka-BB2.patch \
+    file://0002-Device-Tree-for-LS2-RDB-in-BB-mode-with-LS2084A.patch \
+    file://0003-Device-Tree-for-BlueBox3.patch \
 \
     file://blueboxconfig \
     file://binfmt_misc.cfg \
