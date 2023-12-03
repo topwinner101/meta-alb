@@ -1,6 +1,6 @@
-From c863573156ed739b3c3b996f0f2a5d920ae31a1b Mon Sep 17 00:00:00 2001
+From 0387d7bfed237c18f866f030f1b99829a1966dc4 Mon Sep 17 00:00:00 2001
 From: Heinz Wrobel <Heinz.Wrobel@nxp.com>
-Date: Wed, 29 Nov 2023 18:06:06 +0100
+Date: Sun, 3 Dec 2023 21:20:25 +0100
 Subject: [PATCH] drivers/net/aquantia: Patched up AQR rate adaption support
 
 The existing code, when used with an XFI/10GBASE- link to the MAC,
@@ -17,11 +17,11 @@ and then permits lower speed operation on the line.
 
 Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
 ---
- drivers/net/phy/aquantia_main.c | 350 +++++++++++++++++++++++---------
- 1 file changed, 251 insertions(+), 99 deletions(-)
+ drivers/net/phy/aquantia_main.c | 343 +++++++++++++++++++++++---------
+ 1 file changed, 244 insertions(+), 99 deletions(-)
 
 diff --git a/drivers/net/phy/aquantia_main.c b/drivers/net/phy/aquantia_main.c
-index c0976adbe0df..f791e3d64be6 100644
+index c0976adbe0df..bd6cb1329c79 100644
 --- a/drivers/net/phy/aquantia_main.c
 +++ b/drivers/net/phy/aquantia_main.c
 @@ -22,8 +22,8 @@
@@ -128,7 +128,7 @@ index c0976adbe0df..f791e3d64be6 100644
  	if (ret < 0)
  		return ret;
  	if (ret > 0)
-@@ -270,59 +279,99 @@ static int aqr_config_aneg(struct phy_device *phydev)
+@@ -270,59 +279,92 @@ static int aqr_config_aneg(struct phy_device *phydev)
  	return genphy_c45_check_and_restart_aneg(phydev, changed);
  }
  
@@ -156,18 +156,7 @@ index c0976adbe0df..f791e3d64be6 100644
 +	bool changed = false;
 +	u16 reg;
 +	int ret;
-+	static const int rateregmap[] = {
-+		-1,
-+		VEND1_GLOBAL_SYS_CFG_100M,
-+		VEND1_GLOBAL_SYS_CFG_1G,
-+		VEND1_GLOBAL_SYS_CFG_10G,
-+		VEND1_GLOBAL_SYS_CFG_2G5,
-+		VEND1_GLOBAL_SYS_CFG_5G,
-+		VEND1_GLOBAL_SYS_CFG_10M,
-+		-1,
-+		-1, -1, -1, -1, -1, -1, -1, -1
-+	};
-+	int rateadapt;
++	int rateadapt1G, rateadapt2G5, rateadapt5G;
  
 -	if (!aquantia_syscfg[if_type].cnt)
 -		return 0;
@@ -187,20 +176,24 @@ index c0976adbe0df..f791e3d64be6 100644
 -	/* set the default rate to enable the SI link */
 -	phy_write_mmd(phydev, MDIO_MMD_VEND1, AQUANTIA_VND1_GSTART_RATE,
 -		      aquantia_syscfg[if_type].start_rate);
-+	/* If the PHY does rate adaption for the startup rate, we
-+	 * assume that rate adaption in general is happening.
++	/* If the PHY does rate adaption for the rates we permit
++	 * them in autonegotiation.
 +	 * User's responsibility to match mode of MAC and PHY!
 +	 */
-+	rateadapt = 0;
-+	ret = phy_read_mmd(phydev, MDIO_MMD_VEND1, VEND1_GLOBAL_SYS_CFG_STARTUP_RATE);
-+	if (ret < 0)
-+		return ret;
-+	ret = rateregmap[FIELD_GET(VEND1_GLOBAL_SYS_CFG_STARTUP_RATE_MASK, ret)];
++	rateadapt1G = 0;
++	ret = phy_read_mmd(phydev, MDIO_MMD_VEND1, VEND1_GLOBAL_SYS_CFG_1G);
 +	if (ret >= 0) {
-+		ret = phy_read_mmd(phydev, MDIO_MMD_VEND1, ret);
-+		if (ret < 0)
-+			return ret;
-+		rateadapt = FIELD_GET(VEND1_GLOBAL_SYS_CFG_RATEADAPT, ret);
++		rateadapt1G = !!FIELD_GET(VEND1_GLOBAL_SYS_CFG_RATEADAPT, ret);
++	}
++	rateadapt2G5 = 0;
++	ret = phy_read_mmd(phydev, MDIO_MMD_VEND1, VEND1_GLOBAL_SYS_CFG_2G5);
++	if (ret >= 0) {
++		rateadapt2G5 = !!FIELD_GET(VEND1_GLOBAL_SYS_CFG_RATEADAPT, ret);
++	}
++	rateadapt5G = 0;
++	ret = phy_read_mmd(phydev, MDIO_MMD_VEND1, VEND1_GLOBAL_SYS_CFG_5G);
++	if (ret >= 0) {
++		rateadapt5G = !!FIELD_GET(VEND1_GLOBAL_SYS_CFG_RATEADAPT, ret);
 +	}
  
 -	for (i = 0; i <= aquantia_syscfg[if_type].cnt; i++) {
@@ -213,7 +206,7 @@ index c0976adbe0df..f791e3d64be6 100644
 +	 */
 +	reg = 0;
 +	if (linkmode_test_bit(ETHTOOL_LINK_MODE_1000baseT_Full_BIT,
-+			      phydev->advertising) || rateadapt)
++			      phydev->advertising) || rateadapt1G)
 +		reg |= MDIO_AN_VEND_PROV_1000BASET_FULL;
  
 -		phy_write_mmd(phydev, MDIO_MMD_VEND1,
@@ -229,14 +222,14 @@ index c0976adbe0df..f791e3d64be6 100644
 -			      MDIO_PHYXS_VEND_PROV2_USX_AN);
 +	/* Handle the case when the 2.5G and 5G speeds are not advertised */
 +	if (linkmode_test_bit(ETHTOOL_LINK_MODE_2500baseT_Full_BIT,
-+			      phydev->advertising) || rateadapt)
++			      phydev->advertising) || rateadapt2G5)
 +		reg |= MDIO_AN_VEND_PROV_2500BASET_FULL;
  
 -	/* wake PHY back up */
 -	phy_write_mmd(phydev, MDIO_MMD_VEND1, AQUANTIA_VND1_GLOBAL_SC, 0);
 -	mdelay(10);
 +	if (linkmode_test_bit(ETHTOOL_LINK_MODE_5000baseT_Full_BIT,
-+			      phydev->advertising) || rateadapt)
++			      phydev->advertising) || rateadapt5G)
 +		reg |= MDIO_AN_VEND_PROV_5000BASET_FULL;
  
 -	return aqr_config_aneg(phydev);
@@ -272,7 +265,7 @@ index c0976adbe0df..f791e3d64be6 100644
  }
  
  static int aqr_config_intr(struct phy_device *phydev)
-@@ -599,6 +648,29 @@ static int aqr107_config_init(struct phy_device *phydev)
+@@ -599,6 +641,29 @@ static int aqr107_config_init(struct phy_device *phydev)
  	return aqr107_set_downshift(phydev, MDIO_AN_VEND_PROV_DOWNSHIFT_DFLT);
  }
  
@@ -302,7 +295,7 @@ index c0976adbe0df..f791e3d64be6 100644
  static int aqcs109_config_init(struct phy_device *phydev)
  {
  	int ret;
-@@ -623,33 +695,33 @@ static int aqcs109_config_init(struct phy_device *phydev)
+@@ -623,33 +688,33 @@ static int aqcs109_config_init(struct phy_device *phydev)
  	return aqr107_set_downshift(phydev, MDIO_AN_VEND_PROV_DOWNSHIFT_DFLT);
  }
  
@@ -342,7 +335,7 @@ index c0976adbe0df..f791e3d64be6 100644
  
  	afr = val & MDIO_AN_RX_VEND_STAT3_AFR;
  
-@@ -659,6 +731,21 @@ static void aqr107_link_change_notify(struct phy_device *phydev)
+@@ -659,6 +724,21 @@ static void aqr107_link_change_notify(struct phy_device *phydev)
  		   downshift ? ", fast-retrain downshift advertised" : "",
  		   afr ? ", fast reframe advertised" : "");
  
@@ -364,7 +357,7 @@ index c0976adbe0df..f791e3d64be6 100644
  	val = phy_read_mmd(phydev, MDIO_MMD_VEND1, VEND1_GLOBAL_RSVD_STAT9);
  	if (val < 0)
  		return;
-@@ -668,16 +755,52 @@ static void aqr107_link_change_notify(struct phy_device *phydev)
+@@ -668,16 +748,52 @@ static void aqr107_link_change_notify(struct phy_device *phydev)
  		phydev_info(phydev, "Aquantia 1000Base-T2 mode active\n");
  }
  
@@ -421,7 +414,7 @@ index c0976adbe0df..f791e3d64be6 100644
  }
  
  static int aqr107_probe(struct phy_device *phydev)
-@@ -730,7 +853,7 @@ static struct phy_driver aqr_driver[] = {
+@@ -730,7 +846,7 @@ static struct phy_driver aqr_driver[] = {
  	.name		= "Aquantia AQR107",
  	.probe		= aqr107_probe,
  	.config_init	= aqr107_config_init,
@@ -430,7 +423,7 @@ index c0976adbe0df..f791e3d64be6 100644
  	.config_intr	= aqr_config_intr,
  	.handle_interrupt = aqr_handle_interrupt,
  	.read_status	= aqr107_read_status,
-@@ -748,7 +871,7 @@ static struct phy_driver aqr_driver[] = {
+@@ -748,7 +864,7 @@ static struct phy_driver aqr_driver[] = {
  	.name		= "Aquantia AQCS109",
  	.probe		= aqr107_probe,
  	.config_init	= aqcs109_config_init,
@@ -439,7 +432,7 @@ index c0976adbe0df..f791e3d64be6 100644
  	.config_intr	= aqr_config_intr,
  	.handle_interrupt = aqr_handle_interrupt,
  	.read_status	= aqr107_read_status,
-@@ -764,26 +887,56 @@ static struct phy_driver aqr_driver[] = {
+@@ -764,26 +880,56 @@ static struct phy_driver aqr_driver[] = {
  {
  	PHY_ID_MATCH_MODEL(PHY_ID_AQR405),
  	.name		= "Aquantia AQR405",
@@ -510,7 +503,7 @@ index c0976adbe0df..f791e3d64be6 100644
  },
  };
  
-@@ -797,8 +950,7 @@ static struct mdio_device_id __maybe_unused aqr_tbl[] = {
+@@ -797,8 +943,7 @@ static struct mdio_device_id __maybe_unused aqr_tbl[] = {
  	{ PHY_ID_MATCH_MODEL(PHY_ID_AQR107) },
  	{ PHY_ID_MATCH_MODEL(PHY_ID_AQCS109) },
  	{ PHY_ID_MATCH_MODEL(PHY_ID_AQR405) },
