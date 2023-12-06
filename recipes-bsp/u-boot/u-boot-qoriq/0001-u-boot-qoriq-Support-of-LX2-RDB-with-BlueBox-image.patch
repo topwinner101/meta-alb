@@ -1,6 +1,6 @@
-From 87c519363de53f872a7d3880d910878ca41219a1 Mon Sep 17 00:00:00 2001
+From 7506bcfcf4d510244f6cee926bcf40107c75aa17 Mon Sep 17 00:00:00 2001
 From: Heinz Wrobel <Heinz.Wrobel@nxp.com>
-Date: Sun, 2 Apr 2023 09:13:38 +0200
+Date: Sat, 2 Dec 2023 21:11:17 +0100
 Subject: [PATCH] u-boot-qoriq: Support of LX2 RDB with BlueBox image
 
 Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>

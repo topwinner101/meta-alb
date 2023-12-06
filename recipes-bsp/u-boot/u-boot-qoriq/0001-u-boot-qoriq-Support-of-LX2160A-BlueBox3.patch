@@ -1,12 +1,12 @@
-From 4763d8daae6ea8b62edb90d2ff6e878e7db7b807 Mon Sep 17 00:00:00 2001
+From e48c86db57f3cdeb910a099781696f4c3f46eee2 Mon Sep 17 00:00:00 2001
 From: Heinz Wrobel <Heinz.Wrobel@nxp.com>
-Date: Sun, 2 Apr 2023 14:13:59 +0200
-Subject: [PATCH] u-boot-qoriq: Support of LX2160A BlueBox3
+Date: Sat, 2 Dec 2023 21:04:08 +0100
+Subject: [PATCH 1/2] u-boot-qoriq: Support of LX2160A BlueBox3
+
+All the files needed. Enabling them is a separate patch.
 
 Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
 ---
- arch/arm/Kconfig                              |  15 +
- arch/arm/cpu/armv8/Kconfig                    |   1 +
  arch/arm/dts/fsl-lx2160a-bluebox3.dts         | 660 ++++++++++++++++
  board/freescale/lx2160abluebox3/Kconfig       |  17 +
  board/freescale/lx2160abluebox3/MAINTAINERS   |  13 +
@@ -18,7 +18,7 @@ Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
  .../lx2160abluebox3_tfa_SECURE_BOOT_defconfig | 119 +++
  configs/lx2160abluebox3_tfa_defconfig         | 116 +++
  include/configs/lx2160abluebox3.h             | 123 +++
- 13 files changed, 2015 insertions(+)
+ 11 files changed, 1999 insertions(+)
  create mode 100644 arch/arm/dts/fsl-lx2160a-bluebox3.dts
  create mode 100644 board/freescale/lx2160abluebox3/Kconfig
  create mode 100644 board/freescale/lx2160abluebox3/MAINTAINERS
@@ -31,51 +31,6 @@ Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
  create mode 100644 configs/lx2160abluebox3_tfa_defconfig
  create mode 100644 include/configs/lx2160abluebox3.h
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index a5d94cdb46..3425a5dbf7 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1423,6 +1423,20 @@ config TARGET_LX2162AQDS
- 	  Support for NXP LX2162AQDS platform.
- 	  The lx2162aqds support is based on LX2160A Layerscape Architecture processor.
- 
-+config TARGET_LX2160ABLUEBOX3
-+	bool "Support lx2160abluebox3"
-+	select ARCH_LX2160A
-+	select ARM64
-+	select ARMV8_MULTIENTRY
-+	select ARCH_SUPPORT_TFABOOT
-+	select BOARD_LATE_INIT
-+	select GPIO_EXTRA_HEADER
-+	help
-+	  Support for NXP BlueBox3 platform.
-+	  The BlueBox 3 Reference design is a high-performance development
-+	  platform that supports the QorIQ LX2160A Layerscape Architecture
-+	  Processor and the S32G274A Automotive Processor
-+
- config TARGET_HIKEY
- 	bool "Support HiKey 96boards Consumer Edition Platform"
- 	select ARM64
-@@ -2258,6 +2272,7 @@ source "board/freescale/ls1012aqds/Kconfig"
- source "board/freescale/ls1012ardb/Kconfig"
- source "board/freescale/ls1012afrdm/Kconfig"
- source "board/freescale/lx2160a/Kconfig"
-+source "board/freescale/lx2160abluebox3/Kconfig"
- source "board/grinn/chiliboard/Kconfig"
- source "board/hisilicon/hikey/Kconfig"
- source "board/hisilicon/hikey960/Kconfig"
-diff --git a/arch/arm/cpu/armv8/Kconfig b/arch/arm/cpu/armv8/Kconfig
-index 82c4c61507..c3f8a3d561 100644
---- a/arch/arm/cpu/armv8/Kconfig
-+++ b/arch/arm/cpu/armv8/Kconfig
-@@ -116,6 +116,7 @@ config PSCI_RESET
- 		   !TARGET_LS1046AFRWY && \
- 		   !TARGET_LS2081ARDB && !TARGET_LX2160ARDB && \
- 		   !TARGET_LX2160AQDS && !TARGET_LX2162AQDS && \
-+		   !TARGET_LX2160ABLUEBOX3 && \
- 		   !ARCH_UNIPHIER
- 	help
- 	  Most armv8 systems have PSCI support enabled in EL3, either through
 diff --git a/arch/arm/dts/fsl-lx2160a-bluebox3.dts b/arch/arm/dts/fsl-lx2160a-bluebox3.dts
 new file mode 100644
 index 0000000000..0f2ba27c7a

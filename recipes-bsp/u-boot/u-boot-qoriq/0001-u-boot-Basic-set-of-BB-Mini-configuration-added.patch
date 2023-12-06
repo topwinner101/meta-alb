@@ -1,7 +1,7 @@
-From 6ec307fefd97700a05e5cde28b066810fc4fe0f2 Mon Sep 17 00:00:00 2001
+From 3a6eb724c8a49df4a85922ee6f8d53351098fc3b Mon Sep 17 00:00:00 2001
 From: Heinz Wrobel <Heinz.Wrobel@nxp.com>
-Date: Wed, 18 Jan 2023 14:58:19 +0100
-Subject: [PATCH] u-boot: Basic set of BB Mini configuration added
+Date: Sat, 2 Dec 2023 20:43:27 +0100
+Subject: [PATCH 1/2] u-boot: Basic set of BB Mini configuration added
 
 This adds a functional set of BB Mini configurations to support
 NOR and SD boot TFA. This is similar to prior usage in ALB,
@@ -9,11 +9,11 @@ but not identical.
 The memory map has been adapted to mirror LSDK. Specifically the
 environment in flash is in a different location.
 
+This commit contains all the new files but not the patches to
+shared U-Boot files to enable them.
+
 Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
 ---
- arch/arm/Kconfig                              |  21 ++
- arch/arm/cpu/armv8/Kconfig                    |   1 +
- arch/arm/dts/Makefile                         |   1 +
  arch/arm/dts/fsl-ls2084a-bbmini.dts           | 116 ++++++
  board/freescale/ls2084abbmini/Kconfig         |  36 ++
  board/freescale/ls2084abbmini/MAINTAINERS     |   7 +
@@ -24,9 +24,9 @@ Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
  .../ls2084abbmini/eth_ls2084abbmini.c         |  79 ++++
  board/freescale/ls2084abbmini/ls2084abbmini.c | 348 ++++++++++++++++++
  .../ls2084abbmini/ls2084abbmini_qixis.h       |  19 +
- configs/ls2084abbmini_tfa_defconfig           | 108 ++++++
- include/configs/ls2084abbmini.h               | 271 ++++++++++++++
- 15 files changed, 1355 insertions(+)
+ configs/ls2084abbmini_tfa_defconfig           | 115 ++++++
+ include/configs/ls2084abbmini.h               | 221 +++++++++++
+ 12 files changed, 1289 insertions(+)
  create mode 100644 arch/arm/dts/fsl-ls2084a-bbmini.dts
  create mode 100644 board/freescale/ls2084abbmini/Kconfig
  create mode 100644 board/freescale/ls2084abbmini/MAINTAINERS
@@ -40,72 +40,9 @@ Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
  create mode 100644 configs/ls2084abbmini_tfa_defconfig
  create mode 100644 include/configs/ls2084abbmini.h
 
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 58dbca1573..a5d94cdb46 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -1362,6 +1362,26 @@ config TARGET_LS2081ARDB
- 	  development platform that supports the QorIQ LS2081A/LS2041A
- 	  Layerscape Architecture processor.
- 
-+config TARGET_LS2084ABBMINI
-+	bool "Support ls2084abbmini"
-+	select ARCH_LS2080A
-+	select ARM64
-+	select ARMV8_MULTIENTRY
-+	select ARCH_SUPPORT_TFABOOT
-+	select BOARD_LATE_INIT
-+	select SUPPORT_SPL
-+	select FSL_DDR_BIST
-+	select FSL_DDR_INTERACTIVE if !SPL
-+	select GPIO_EXTRA_HEADER
-+	imply SCSI
-+	imply SCSI_AHCI
-+	help
-+	  Support for NXP BlueBox Mini platform.
-+	  The BlueBox Mini Reference design is a high-performance
-+	  development platform that supports the QorIQ LS2084A
-+	  Layerscape Architecture processor, teh S32V234 automotive
-+	  processor, and the S32R27 ASIL-D capable MCU.
-+
- config TARGET_LX2160ARDB
- 	bool "Support lx2160ardb"
- 	select ARCH_LX2160A
-@@ -2223,6 +2243,7 @@ source "board/emulation/qemu-arm/Kconfig"
- source "board/freescale/ls2080aqds/Kconfig"
- source "board/freescale/ls2080ardb/Kconfig"
- source "board/freescale/ls1088a/Kconfig"
-+source "board/freescale/ls2084abbmini/Kconfig"
- source "board/freescale/ls1028a/Kconfig"
- source "board/freescale/ls1021aqds/Kconfig"
- source "board/freescale/ls1043aqds/Kconfig"
-diff --git a/arch/arm/cpu/armv8/Kconfig b/arch/arm/cpu/armv8/Kconfig
-index 9967376eca..82c4c61507 100644
---- a/arch/arm/cpu/armv8/Kconfig
-+++ b/arch/arm/cpu/armv8/Kconfig
-@@ -105,6 +105,7 @@ config PSCI_RESET
- 	depends on !ARCH_APPLE && !ARCH_BCM283X && !ARCH_EXYNOS7 && \
- 		   !TARGET_LS2080AQDS && \
- 		   !TARGET_LS2080ARDB && !TARGET_LS2080A_EMU && \
-+		   !TARGET_LS2084ABBMINI && \
- 		   !TARGET_LS1088ARDB && !TARGET_LS1088AQDS && \
- 		   !TARGET_LS1012ARDB && !TARGET_LS1012AFRDM && \
- 		   !TARGET_LS1012A2G5RDB && !TARGET_LS1012AQDS && \
-diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 95f2a49df4..851049feaf 100644
---- a/arch/arm/dts/Makefile
-+++ b/arch/arm/dts/Makefile
-@@ -446,6 +446,7 @@ dtb-$(CONFIG_FSL_LSCH3) += fsl-ls2080a-qds.dtb \
- 	fsl-ls2080a-qds-42-x.dtb \
- 	fsl-ls2080a-rdb.dtb \
- 	fsl-ls2081a-rdb.dtb \
-+	fsl-ls2084a-bbmini.dtb \
- 	fsl-ls2088a-rdb-qspi.dtb \
- 	fsl-ls1088a-rdb.dtb \
- 	fsl-ls1088a-qds.dtb \
 diff --git a/arch/arm/dts/fsl-ls2084a-bbmini.dts b/arch/arm/dts/fsl-ls2084a-bbmini.dts
 new file mode 100644
-index 0000000000..e80494be75
+index 0000000000..8e9a382730
 --- /dev/null
 +++ b/arch/arm/dts/fsl-ls2084a-bbmini.dts
 @@ -0,0 +1,116 @@
@@ -654,7 +591,7 @@ index 0000000000..a57154da59
 +#endif
 diff --git a/board/freescale/ls2084abbmini/eth_ls2084abbmini.c b/board/freescale/ls2084abbmini/eth_ls2084abbmini.c
 new file mode 100644
-index 0000000000..a66c2f8c05
+index 0000000000..671cb5e42a
 --- /dev/null
 +++ b/board/freescale/ls2084abbmini/eth_ls2084abbmini.c
 @@ -0,0 +1,79 @@
@@ -1118,11 +1055,12 @@ index 0000000000..db3c6dc2a2
 +#endif /*__LS2_RDB_QIXIS_H__*/
 diff --git a/configs/ls2084abbmini_tfa_defconfig b/configs/ls2084abbmini_tfa_defconfig
 new file mode 100644
-index 0000000000..5161b1c964
+index 0000000000..33d2231ea3
 --- /dev/null
 +++ b/configs/ls2084abbmini_tfa_defconfig
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,115 @@
 +CONFIG_ARM=y
++CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_GIC_V3_ITS=y
 +CONFIG_TARGET_LS2084ABBMINI=y
 +CONFIG_TFABOOT=y
@@ -1150,6 +1088,7 @@ index 0000000000..5161b1c964
 +CONFIG_FIT_VERBOSE=y
 +CONFIG_OF_BOARD_SETUP=y
 +CONFIG_OF_STDOUT_VIA_ALIAS=y
++CONFIG_DDR_CLK_FREQ=133333333
 +CONFIG_DYNAMIC_SYS_CLK_FREQ=y
 +CONFIG_BOOTDELAY=10
 +CONFIG_HUSH_PARSER=y
@@ -1168,6 +1107,7 @@ index 0000000000..5161b1c964
 +CONFIG_CMD_GPT=y
 +CONFIG_CMD_I2C=y
 +CONFIG_CMD_MMC=y
++CONFIG_CMD_OPTEE_RPMB=y
 +CONFIG_CMD_PCI=y
 +CONFIG_CMD_USB=y
 +CONFIG_CMD_SETEXPR=y
@@ -1188,7 +1128,6 @@ index 0000000000..5161b1c964
 +CONFIG_SATA=y
 +CONFIG_SATA_CEVA=y
 +CONFIG_FSL_CAAM=y
-+CONFIG_DDR_CLK_FREQ=133333333
 +CONFIG_DDR_ECC=y
 +CONFIG_ECC_INIT_VIA_DDRCONTROLLER=y
 +CONFIG_MPC8XXX_GPIO=y
@@ -1214,6 +1153,7 @@ index 0000000000..5161b1c964
 +CONFIG_NVME_PCI=y
 +CONFIG_PCI=y
 +CONFIG_PCIE_LAYERSCAPE_RC=y
++CONFIG_PCI_IOMMU_EXTRA_MAPPINGS=y
 +CONFIG_DM_RTC=y
 +CONFIG_DM_SCSI=y
 +CONFIG_CONS_INDEX=2
@@ -1221,6 +1161,8 @@ index 0000000000..5161b1c964
 +CONFIG_SPI=y
 +CONFIG_DM_SPI=y
 +CONFIG_FSL_DSPI=y
++CONFIG_TEE=y
++CONFIG_OPTEE=y
 +CONFIG_USB=y
 +CONFIG_DM_USB=y
 +CONFIG_USB_XHCI_HCD=y
@@ -1230,12 +1172,14 @@ index 0000000000..5161b1c964
 +CONFIG_DISTRO_DEFAULTS=y
 +CONFIG_OF_LIBFDT_OVERLAY=y
 +CONFIG_OF_SYSTEM_SETUP=y
++CONFIG_CMD_NVME=y
++CONFIG_NVME=y
 diff --git a/include/configs/ls2084abbmini.h b/include/configs/ls2084abbmini.h
 new file mode 100644
-index 0000000000..9ac4a52d8d
+index 0000000000..5e51db874a
 --- /dev/null
 +++ b/include/configs/ls2084abbmini.h
-@@ -0,0 +1,271 @@
+@@ -0,0 +1,221 @@
 +/* SPDX-License-Identifier: GPL-2.0+ */
 +/*
 + * Copyright 2017-2018, 2020 NXP
@@ -1261,31 +1205,11 @@ index 0000000000..9ac4a52d8d
 +#define I2C_VOL_MONITOR_ADDR           0x63
 +#define LTC_VID_CHANNEL 0
 +
-+/* Backwards compatibility if an old style setup with PPA is booted */
-+#if defined(CONFIG_FSL_LS_PPA)
-+#define SEC_FIRMWARE_FIT_CNF_NAME	"config@1"
-+#endif
-+
 +/* The lowest and highest voltage allowed */
 +#define VDD_MV_MIN			819
 +#define VDD_MV_MAX			1212
 +
-+#ifndef __ASSEMBLY__
-+unsigned long get_board_sys_clk(void);
-+#endif
-+
-+#if defined(CONFIG_SPL_BUILD)
-+#define CONFIG_SYS_NO_FLASH
-+#undef CONFIG_CMD_IMLS
-+#endif
-+
-+#if defined(CONFIG_SPL_BUILD)
-+#define CONFIG_SYS_CLK_FREQ		100000000
-+#else
-+#define CONFIG_SYS_CLK_FREQ		get_board_sys_clk()
-+#endif
-+#define CONFIG_DDR_CLK_FREQ		133333333
-+#define COUNTER_FREQUENCY_REAL		(CONFIG_SYS_CLK_FREQ/4)
++#define COUNTER_FREQUENCY_REAL		(get_board_sys_clk()/4)
 +
 +#define CONFIG_MEM_INIT_VALUE		0xdeadbeef
 +#define SPD_EEPROM_ADDRESS1	0x51
@@ -1300,15 +1224,8 @@ index 0000000000..9ac4a52d8d
 +#undef CONFIG_SYS_DP_DDR_BASE_PHY
 +
 +/* SATA */
-+#define CONFIG_SCSI_AHCI_PLAT
 +
 +#define CONFIG_SYS_SATA1			AHCI_BASE_ADDR1
-+
-+#define CONFIG_SYS_SCSI_MAX_SCSI_ID		1
-+#define CONFIG_SYS_SCSI_MAX_LUN			1
-+#if defined (CONFIG_SD_BOOT) || defined(CONFIG_TFABOOT)
-+#define CONFIG_SYS_MMC_ENV_DEV         0
-+#endif
 +
 +#if 1
 +
@@ -1340,11 +1257,12 @@ index 0000000000..9ac4a52d8d
 +#define CONFIG_SYS_NOR_FTIM3	0x04000000
 +#define CONFIG_SYS_IFC_CCR	0x01000000
 +
++#define CONFIG_SYS_FLASH_CFI_WIDTH  FLASH_CFI_16BIT
++
 +#ifdef CONFIG_MTD_NOR_FLASH
 +#define CONFIG_SYS_FLASH_QUIET_TEST
 +#define CONFIG_FLASH_SHOW_PROGRESS	45 /* count down from 45/5: 9..1 */
 +
-+#define CONFIG_SYS_MAX_FLASH_BANKS	1	/* number of banks */
 +#define CONFIG_SYS_MAX_FLASH_SECT	1024	/* sectors per device */
 +#define CONFIG_SYS_FLASH_ERASE_TOUT	60000	/* Flash Erase Timeout (ms) */
 +#define CONFIG_SYS_FLASH_WRITE_TOUT	500	/* Flash Write Timeout (ms) */
@@ -1360,24 +1278,10 @@ index 0000000000..9ac4a52d8d
 +#define QIXIS_LBMAP_SHIFT		0
 +#define QIXIS_LBMAP_DFLTBANK		0x00
 +#define QIXIS_LBMAP_ALTBANK		0x04
-+
 +#define QIXIS_LBMAP_SD			QIXIS_LBMAP_DFLTBANK
 +#define QIXIS_RCW_SRC_SD		0x40
-+
-+/* Could only be used with default J30 of 1-2! */
 +#define QIXIS_LBMAP_IFC			QIXIS_LBMAP_DFLTBANK
 +#define QIXIS_RCW_SRC_IFC		0x25
-+
-+/* QSPI support via QIXIS is a loaded topic. It could only
-+ * be used with a different CPLD image that enables I2C access
-+ * as opposed to IFC access.
-+ */
-+#if 0
-+/* Could only be used with changing J30 to 2-3! */
-+#define QIXIS_LBMAP_QSPI		QIXIS_LBMAP_DFLTBANK
-+#define QIXIS_RCW_SRC_QSPI		0x62
-+#endif
-+
 +#define QIXIS_RST_CTL_RESET		0x31
 +#define QIXIS_RST_CTL_RESET_EN		0x30
 +#define QIXIS_RCFG_CTL_RECONFIG_IDLE	0x20
@@ -1418,9 +1322,6 @@ index 0000000000..9ac4a52d8d
 +#define CONFIG_SYS_CS0_FTIM2		CONFIG_SYS_NOR_FTIM2
 +#define CONFIG_SYS_CS0_FTIM3		CONFIG_SYS_NOR_FTIM3
 +
-+/* Debug Server firmware */
-+#define CONFIG_SYS_DEBUG_SERVER_FW_IN_NOR
-+#define CONFIG_SYS_DEBUG_SERVER_FW_ADDR	0x580D00000ULL
 +#endif
 +#define CONFIG_SYS_LS_MC_BOOT_TIMEOUT_MS 5000
 +
@@ -1438,6 +1339,7 @@ index 0000000000..9ac4a52d8d
 +#define I2C_MUX_CH_RETIMER      0xa
 +#define I2C_MUX_CH_VOL_MONITOR  0xc
 +
++/* SPI */
 +
 +/*
 + * RTC configuration
@@ -1478,18 +1380,10 @@ index 0000000000..9ac4a52d8d
 +#undef CONFIG_EXTRA_ENV_SETTINGS
 +#define CONFIG_EXTRA_ENV_SETTINGS		\
 +	"hwconfig=fsl_ddr:bank_intlv=auto\0"	\
-+	"loadaddr=0x80100000\0"			\
-+	"kernel_addr=0x100000\0"		\
-+	"ramdisk_addr=0x800000\0"		\
-+	"ramdisk_size=0x2000000\0"		\
-+	"fdt_high=0xa0000000\0"			\
-+	"initrd_high=0xffffffffffffffff\0"	\
-+	"kernel_start=0x581100000\0"		\
-+	"kernel_load=0xa0000000\0"		\
-+	"kernel_size=0x2800000\0"		\
-+	"mcinitcmd=fsl_mc start mc 0x580300000"	\
-+	" 0x580800000 \0"
-+
++	"kernel_addr=0x581000000\0"		\
++	"kernel_start=0x1000000\0"		\
++	"load_addr=0xa0000000\0"		\
++	"kernel_size=0x2800000\0"		
 +
 +/* MAC/PHY configuration */
 +#ifdef CONFIG_FSL_MC_ENET
