@@ -13,6 +13,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}:"
 SRC_URI += " \
     file://0001-qoriq-atf-Support-for-ls2084abbmini.patch \
     file://0001-qoriq-atf-Basic-support-for-LX2160A-BlueBox3.patch \
+    file://0001-atf-LS2-boot-source-was-not-properly-evaluated.patch \
 "
 
 # What's in a name? That which we call a rose,
