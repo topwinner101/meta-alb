@@ -10,7 +10,7 @@ IMAGE_FSTYPES = "tar.gz ext4"
 
 EXTRA_IMAGECMD:ext4 = "-i 4096 -L ${IMAGE_NAME}"
 
-EXTRA_IMAGEDEPENDS += "mc-utils management-complex ppa"
+EXTRA_IMAGEDEPENDS += "mc-utils management-complex"
 
 # No better place for this if it should stay in the layer
 PREFERRED_PROVIDER_jpeg ?= "libjpeg-turbo"
