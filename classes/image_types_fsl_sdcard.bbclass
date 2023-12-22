@@ -177,12 +177,19 @@ generate_sdcardimage_entry_raw() {
 
 generate_sdcardimage_entry() {
         file="$1"
+
+        # For SD card, we don't flash firmwares inside the image.
+        if echo "$file" | grep -q ".fw"; then
+            return
+        fi
+
         if [ -n "${file}" ]; then
                 file="${DEPLOY_DIR_IMAGE}/${file}"
 
                 if [ -z "$3" ]; then
-                        bberror "$2 is undefined. To use the 'sdcard' image it needs to be defined as byte offset."
-                        exit 1
+                        # Don't break the build. Just don't add the firmware to the image if the offset is not set.
+                        bbwarn "$2 is undefined. To use the 'sdcard' image it needs to be defined as byte offset."
+                        return
                 fi
                 generate_sdcardimage_entry_raw "${file}" "$2" "$3" "$4" "$5"
         fi
