@@ -9,10 +9,10 @@ COMPATIBLE_MACHINE:s32g = "s32g"
 # we do not want to take the linux-yocto from YoctoProject
 SRC_URI:remove:s32g = "git://git.yoctoproject.org/linux-yocto.git;name=machine;branch=${KBRANCH};"
 
-KVER = "5.15.129"
+KVER = "5.15.145"
 PV = "${KVER}"
 SRCBRANCH:s32g = "${RELEASE_BASE}-${KVER}-rt"
-SRCREV_machine:s32g = "5af7edc65ff3a87e2c78482c6d00a7b75081740f"
+SRCREV_machine:s32g = "767a834e481bd3e6b295b992267d435562b28bd4"
 
 # instead, we will take NXP linux project from GitHub
 SRC_URI:append:s32g = "\
