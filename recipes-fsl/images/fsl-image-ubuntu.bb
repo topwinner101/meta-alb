@@ -110,6 +110,8 @@ APTGET_EXTRA_PACKAGES += " \
     qgit \
 \
     lm-sensors \
+\
+    i2c-tools \
 "
 
 # The following packages are apparently not mainstream enough to be
