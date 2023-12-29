@@ -233,4 +233,7 @@ IMAGE_ROOTFS_EXTRA_SPACE:append = "${@bb.utils.contains("DISTRO_FEATURES", "syst
 IMAGE_INSTALL:append:s32g274ardb2 = " sja1110"
 IMAGE_INSTALL:append:s32g399ardb3 = " sja1110"
 
+# optee
+IMAGE_INSTALL:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'optee', ' optee-client optee-examples optee-test ', '', d)}"
+
 COMPATIBLE_MACHINE ="(.*ubuntu)"
