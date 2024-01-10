@@ -112,6 +112,9 @@ APTGET_EXTRA_PACKAGES += " \
     lm-sensors \
 \
     i2c-tools \
+\
+    gpiod \
+    libgpiod-dev \
 "
 
 # The following packages are apparently not mainstream enough to be
