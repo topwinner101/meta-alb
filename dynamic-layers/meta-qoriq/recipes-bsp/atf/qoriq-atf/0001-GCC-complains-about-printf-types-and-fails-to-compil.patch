@@ -7,23 +7,21 @@ If debug logging is enabled, a few printf patterns used fail to
 compile. This patch tries to tweak the patterns so that they match the
 printed types better.
 
+Issue: ALB-10847
+Issue: ALB-10962
+
 Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
+Signed-off-by: Florin Buica <florin.buica@nxp.com>
 ---
- drivers/nxp/sd/sd_mmc.c                | 5 +++--
+ drivers/nxp/sd/sd_mmc.c                | 4 ++--
  lib/xlat_tables_v2/xlat_tables_utils.c | 2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/nxp/sd/sd_mmc.c b/drivers/nxp/sd/sd_mmc.c
-index f7f48e723..bcad2951b 100644
+index f7f48e723..b508206a3 100644
 --- a/drivers/nxp/sd/sd_mmc.c
 +++ b/drivers/nxp/sd/sd_mmc.c
-@@ -19,6 +19,7 @@
- #include <utils.h>
- #include <utils_def.h>
- 
- /* Private structure for MMC driver data */
- static struct mmc mmc_drv_data;
-@@ -1348,7 +1349,7 @@ int esdhc_read(struct mmc *mmc, uint32_t src_offset, uintptr_t dst, size_t size)
+@@ -1348,7 +1348,7 @@ int esdhc_read(struct mmc *mmc, uint32_t src_offset, uintptr_t dst, size_t size)
  
  #ifdef NXP_SD_DEBUG
  	INFO("sd mmc read\n");
@@ -32,7 +30,7 @@ index f7f48e723..bcad2951b 100644
  #endif
  
  	/* check for size */
-@@ -1410,7 +1411,7 @@ int esdhc_write(struct mmc *mmc, uintptr_t src, uint32_t dst_offset,
+@@ -1410,7 +1410,7 @@ int esdhc_write(struct mmc *mmc, uintptr_t src, uint32_t dst_offset,
  
  #ifdef NXP_SD_DEBUG
  	INFO("sd mmc write\n");
@@ -55,5 +53,5 @@ index df1738642..612a8adce 100644
  				       (uint64_t)(desc & TABLE_ADDR_MASK),
  				       level_size);
 -- 
-2.34.1
+2.25.1
 
