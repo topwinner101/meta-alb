@@ -1,22 +1,31 @@
-From e304daa2253dd78214a3a0075a62dabdcfe62641 Mon Sep 17 00:00:00 2001
+From c82e5007eddcb547aa5c5fe530c84b93c44c2163 Mon Sep 17 00:00:00 2001
 From: Heinz Wrobel <Heinz.Wrobel@nxp.com>
 Date: Tue, 8 Nov 2022 11:38:36 +0100
-Subject: [PATCH 06/20] pseudo: Filename translation for exec path handling
+Subject: [PATCH] pseudo: Filename translation for exec path handling
 
 This is required to map between host and chroot exe paths in somewhat
 arbitrary ways. We need it later.
 
 Signed-off-by: Heinz Wrobel <Heinz.Wrobel@nxp.com>
+
 ---
- pseudo_client.c | 12 ++++++++++++
+ pseudo_client.c | 17 +++++++++++++++++
  pseudo_util.c   |  1 +
- 2 files changed, 13 insertions(+)
+ 2 files changed, 18 insertions(+)
 
 diff --git a/pseudo_client.c b/pseudo_client.c
-index 355b4ef..f75ce1c 100644
+index 355b4ef..d4541ae 100644
 --- a/pseudo_client.c
 +++ b/pseudo_client.c
-@@ -2235,6 +2235,8 @@ pseudo_exec_path(const char *filename, int search_path) {
+@@ -12,6 +12,7 @@
+ #include <signal.h>
+ #include <stdarg.h>
+ #include <stdlib.h>
++#include <libgen.h>
+ #include <string.h>
+ #include <limits.h>
+ #include <time.h>
+@@ -2235,6 +2236,8 @@ pseudo_exec_path(const char *filename, int search_path) {
  	char *candidate;
  	int i;
  	struct stat buf;
@@ -25,7 +34,7 @@ index 355b4ef..f75ce1c 100644
  
  	if (!filename)
  		return NULL;
-@@ -2251,6 +2253,16 @@ pseudo_exec_path(const char *filename, int search_path) {
+@@ -2251,6 +2254,20 @@ pseudo_exec_path(const char *filename, int search_path) {
  		populate_path_segs();
  	}
  
@@ -33,9 +42,13 @@ index 355b4ef..f75ce1c 100644
 +	 * the base name only. This permits generic aliasing of basenames
 +	 */
 +	s = patternlistmatchespath(xtranslation, filename, &aliasbuf[0], sizeof(aliasbuf), 1);
-+	if (!s)
-+		s = patternlistmatchespath(xtranslation, basename(filename), &aliasbuf[0], sizeof(aliasbuf), 1);
-+	if (s) {
++	if (!s) {
++		char *filenamecopy = strdup(filename);
++		if (filenamecopy) {
++			s = patternlistmatchespath(xtranslation, basename(filenamecopy), &aliasbuf[0], sizeof(aliasbuf), 1);
++			free(filenamecopy);
++		}
++	} else {
 +		filename = s;
 +	}
 +
@@ -54,6 +67,3 @@ index 64636b7..289ece2 100644
  	{ "PSEUDO_UIDS", 11, NULL },
  	{ "PSEUDO_GIDS", 11, NULL },
  	{ "PSEUDO_OPTS", 11, NULL },
--- 
-2.34.1
-
