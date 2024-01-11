@@ -7,7 +7,10 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d7810fab7487fb0aad327b76f1be7cd7"
 inherit module
 
 SRC_URI = "git://github.com/nxp-archive/autoivnsw_sja1110_linux;branch=master;protocol=https"
-SRC_URI += "file://0001-sja1110_init-fix-various-issues.patch"
+SRC_URI += "\
+	file://0001-sja1110_init-fix-various-issues.patch \
+	file://0001-sja1110-Add-Linux-kernel-v6.1-rt-compatibility-patch.patch \
+"
 SRCREV = "ac06f130d512e75edcf98d1a8304edd90055e525"
 
 S = "${WORKDIR}/git"
