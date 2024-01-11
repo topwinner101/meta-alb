@@ -34,6 +34,9 @@ PREFERRED_VERSION_optee-client ?= "3.18.0"
 PREFERRED_VERSION_optee-test ?= "3.18.0"
 PREFERRED_VERSION_optee-examples ?= "3.18.0"
 
+PREFERRED_VERSION_arm-trusted-firmware ?= "2.5"
+PREFERRED_VERSION_arm-trusted-firmware-tools ?= "2.5"
+
 PREFERRED_VERSION_rng-tools ?= "5"
 PREFERRED_VERSION_tcpreplay ?= "4.4.4"
 
