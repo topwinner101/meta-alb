@@ -58,6 +58,7 @@ EXTRA_OEMAKE += " \
                 ARCH=${TARGET_ARCH} \
                 BUILD_BASE=${B} \
                 PLAT=${ATF_PLAT} \
+                DTB_FILE_NAME=${@os.path.basename(d.getVar('KERNEL_DEVICETREE'))} \
                 "
 
 EXTRA_OEMAKE += "${@oe.utils.conditional('BUILD_TYPE', 'debug', 'DEBUG=1', '', d)}"
