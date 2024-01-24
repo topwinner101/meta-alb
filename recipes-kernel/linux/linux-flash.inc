@@ -57,7 +57,17 @@ KERNEL_PACKAGE_NAME = "kernel-flash"
 # Set the environment to the virtual/kernel equivalent
 BASERECIPE = "${PREFERRED_PROVIDER_virtual/kernel}"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BASERECIPE}:"
-require recipes-kernel/linux/${BASERECIPE}_${RECIPEV}.bb
+
+
+# This should be a 'require' but then we have to provide dummy
+# files for any kernel version that any target may use, i.e., we
+# would have to second guess other layers. Rather than doing that
+# we switch to a silent 'include'
+include recipes-kernel/linux/${BASERECIPE}_${RECIPEV}.bb
+
+# ... and fall back to the Yocto provided dummy only if we have not
+# included a recipe.
+require ${@oe.utils.conditional('LICENSE', 'INVALID', "recipes-kernel/linux/linux-dummy.bb", "", d)}
 
 #----------------------------------------------------------------------
 # Before we do anything in this recipe, we need to ensure that
