@@ -13,8 +13,9 @@
 IMAGE_FSTYPES = "flashimage"
 
 require fsl-image-emptyrootfs.inc
-
 require ${@bb.utils.contains('DISTRO_FEATURES', 'pfe', 'recipes-fsl/images/fsl-image-pfe.inc', '', d)}
+
+do_prepare_recipe_sysroot[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'fsl-image-itb:do_mkimage', '', d)}"
 
 # Userspace support for QSPI Flash under Linux for S32CC platforms
 IMAGE_INSTALL:append:s32cc = " mtd-utils "

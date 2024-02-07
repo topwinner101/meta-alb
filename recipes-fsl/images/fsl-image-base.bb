@@ -54,7 +54,7 @@ IMAGE_INSTALL:append:fsl-lsch3 = " \
     linux-kernelitb-norootfs-image \
 "
 
-IMAGE_FSTYPES ?= "tar.gz"
+IMAGE_FSTYPES:append = " tar.gz cpio.gz "
 
 # Populate PFE and PFE FW
 require ${@bb.utils.contains('DISTRO_FEATURES', 'pfe', 'recipes-fsl/images/fsl-image-pfe.inc', '', d)}
