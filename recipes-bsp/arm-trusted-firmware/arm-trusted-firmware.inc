@@ -161,6 +161,8 @@ do_install:append() {
 	done
 }
 
+FILES:${PN} = ""
+
 FILES:${PN}-plat-hdrs = " ${includedir}/plat-hdrs/*.h "
 PROVIDES += "${PN}-plat-hdrs"
 PACKAGES += "${PN}-plat-hdrs"
