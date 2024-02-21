@@ -39,6 +39,13 @@ SRC_URI:append:s32cc = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'file://build/optee_config.cfg', '', d)} \
 "
 
+# Switch the UART baudrate to be used if it is the case
+S32_BAUDRATE = "${@d.getVar("SERIAL_CONSOLES", True).split(" ")[0].split(";")[0] }"
+DELTA_UBOOT_DEFCONFIG:append:s32cc = " serial_configs/baudrate_${S32_BAUDRATE}.cfg"
+SRC_URI:append:s32cc = " \
+    ${@ 'file://build/serial_configs/baudrate_${S32_BAUDRATE}.cfg' } \
+"
+
 # FIXME: Allow linking of 'tools' binaries with native libraries
 #        used for generating the boot logo and other tools used
 #        during the build process.
