@@ -78,6 +78,9 @@ EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'secboot', '${SECBOOT_A
 EXTRA_OEMAKE += "S32CC_USE_SCMI_PINCTRL=${SCMI_USE_SCMI_PINCTRL}"
 EXTRA_OEMAKE += "S32CC_USE_SCMI_NVMEM=${SCMI_USE_SCMI_NVMEM}"
 
+# Switch the UART baudrate to be used if it is the case
+EXTRA_OEMAKE += "${@ 'S32_LINFLEX_BAUDRATE=' + d.getVar("SERIAL_CONSOLES", True).split(" ")[0].split(";")[0] }"
+
 PINCTRL_OPT = "${@oe.utils.conditional('SCMI_USE_SCMI_PINCTRL', '1', '--pinctrl', '--no-pinctrl', d)}"
 GPIO_OPT = "${@oe.utils.conditional('SCMI_USE_SCMI_GPIO', '1', '--gpio', '--no-gpio', d)}"
 NVMEM_OPT = "${@oe.utils.conditional('SCMI_USE_SCMI_NVMEM', '1', '--nvmem', '--no-nvmem', d)}"
