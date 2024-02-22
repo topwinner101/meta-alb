@@ -7,6 +7,7 @@ RSA_PRIV_FIT = "boot_key.key"
 RSA_PUB_FIT = "boot_key.crt"
 ITS = "s32.its"
 INSTALL_PATH_FIT_KEYS = "/etc/keys/verifiedboot/"
+DTB_DEBUG = "${@oe.utils.conditional('BUILD_TYPE', 'debug', 'DEBUG=1', '', d)}"
 
 SRC_URI:append = " \
                     file://s32.its \
@@ -22,7 +23,7 @@ do_generate_fit_keys () {
         openssl req -batch -new -x509 -key  ${FIT_KEYS_DIR}/${RSA_PRIV_FIT} -out ${FIT_KEYS_DIR}/${RSA_PUB_FIT}
 
         # creating ATF dtbs
-        make -C "${S}" CROSS_COMPILE=${TARGET_PREFIX} ARCH=${TARGET_ARCH} BUILD_BASE=${B} PLAT=${ATF_PLAT} dtbs
+        make -C "${S}" CROSS_COMPILE=${TARGET_PREFIX} ARCH=${TARGET_ARCH} BUILD_BASE=${B} PLAT=${ATF_PLAT} ${DTB_DEBUG} dtbs
 
         # workaround: using an empty file as kernel and dtb because mkimage does not allow only updating atf dtb with public key
         touch ${WORKDIR}/empty_image
