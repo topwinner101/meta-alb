@@ -89,6 +89,54 @@ do_compile:append() {
 	fi
 }
 
+# Cannot prepend next function since some kernel versions clean after themselves during modules_install while others do not
+# Instead, we need to re-define the whole function and check for folder existance before trying to delete it
+kernel_do_install() {
+        #
+        # First install the modules
+        #
+        unset CFLAGS CPPFLAGS CXXFLAGS LDFLAGS MACHINE
+        if (grep -q -i -e '^CONFIG_MODULES=y$' .config); then
+                oe_runmake DEPMOD=echo MODLIB=${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION} INSTALL_FW_PATH=${D}${nonarch_base_libdir}/firmware modules_install
+                rm -f "${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION}/build"
+                rm -f "${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION}/source"
+                if [ -d ${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION}/kernel ]; then
+                        # Remove empty module directories to prevent QA issues
+                        find "${D}${nonarch_base_libdir}/modules/${KERNEL_VERSION}/kernel" -type d -empty -delete
+                fi
+        else
+                bbnote "no modules to install"
+        fi
+
+        #
+        # Install various kernel output (zImage, map file, config, module support files)
+        #
+        install -d ${D}/${KERNEL_IMAGEDEST}
+
+        #
+        # When including an initramfs bundle inside a FIT image, the fitImage is created after the install task
+        # by do_assemble_fitimage_initramfs.
+        # This happens after the generation of the initramfs bundle (done by do_bundle_initramfs).
+        # So, at the level of the install task we should not try to install the fitImage. fitImage is still not
+        # generated yet.
+        # After the generation of the fitImage, the deploy task copies the fitImage from the build directory to
+        # the deploy folder.
+        #
+
+        for imageType in ${KERNEL_IMAGETYPES} ; do
+                if [ $imageType != "fitImage" ] || [ "${INITRAMFS_IMAGE_BUNDLE}" != "1" ] ; then
+                        install -m 0644 ${KERNEL_OUTPUT_DIR}/$imageType ${D}/${KERNEL_IMAGEDEST}/$imageType-${KERNEL_VERSION}
+                fi
+        done
+
+        install -m 0644 System.map ${D}/${KERNEL_IMAGEDEST}/System.map-${KERNEL_VERSION}
+        install -m 0644 .config ${D}/${KERNEL_IMAGEDEST}/config-${KERNEL_VERSION}
+        install -m 0644 vmlinux ${D}/${KERNEL_IMAGEDEST}/vmlinux-${KERNEL_VERSION}
+        [ -e Module.symvers ] && install -m 0644 Module.symvers ${D}/${KERNEL_IMAGEDEST}/Module.symvers-${KERNEL_VERSION}
+        install -d ${D}${sysconfdir}/modules-load.d
+        install -d ${D}${sysconfdir}/modprobe.d
+}
+
 do_install:append:s32() {
     if [ -f "arch/${ARCH}/boot/zImage" ]; then
         install -m 0644 arch/${ARCH}/boot/zImage ${D}/boot/zImage-${KERNEL_VERSION}
