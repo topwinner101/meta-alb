@@ -33,3 +33,6 @@ EXTRA_OEMAKE += " \
                 "
 EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'hse', '${HSE_ARGS}', '', d)}"
 EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'xen', '${XEN_ARGS}', '', d)}"
+
+# Switch the UART baudrate to be used if it is the case
+EXTRA_OEMAKE += "${@ 'CFG_S32_UART_BAUDRATE=' + d.getVar("SERIAL_CONSOLES", True).split(" ")[0].split(";")[0] }"
