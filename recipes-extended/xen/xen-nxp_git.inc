@@ -11,5 +11,5 @@ SRC_URI = "\
     file://0001-python-pygrub-pass-DISTUTILS-xen-4.15.patch \
 "
 
-SRCREV = "29003faec4f38902c084800109dc59b981a043e0"
+SRCREV = "75a6fa04eee6089a258c812530315c33ad8c45af"
 LIC_FILES_CHKSUM = "file://COPYING;md5=d1a1e216f80b6d8da95fec897d0dbec9"
