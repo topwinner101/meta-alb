@@ -1,9 +1,12 @@
 #
-# Copyright 2017-2023 NXP
+# Copyright 2017-2024 NXP
 #
 
 # Support for Inter-Process(or) Communication over Shared Memory (ipc-shm) under Linux
-IPCSHM ?= "ipc-shm"
+# Currently, 'ipc-shm' is not supported on Linux Kernel version 6.6
+KERNEL_MAJ_VER = "${@oe.utils.trim_version("${PREFERRED_VERSION_linux-s32}", 2)}"
+IPCSHM ?= "${@oe.utils.ifelse(d.getVar('KERNEL_MAJ_VER') == '6.6', '', 'ipc-shm')}"
+
 IMAGE_INSTALL:append:s32g = " ${IPCSHM} "
 IMAGE_INSTALL:append:s32r45 = " ${IPCSHM} "
 
