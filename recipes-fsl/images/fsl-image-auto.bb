@@ -59,10 +59,6 @@ IMAGE_INSTALL:append = " openssh openssh-sftp openssh-sftp-server "
 # Other useful tools
 IMAGE_INSTALL:append = " rsync irqbalance i2c-tools linuxptp"
 
-# PCIe demos and test apps
-PCIE_INSTALL_PACKAGES ?= " demo-pcie-shared-mem demo-virt-eth"
-IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' ${PCIE_INSTALL_PACKAGES}', '', d)}"
-
 # sysfs gpio interface is deprecated, include gpiod tools, lib and headers
 IMAGE_INSTALL:append = " libgpiod libgpiod-tools libgpiod-dev"
 
