@@ -1,5 +1,5 @@
 #
-# Copyright 2017-2023 NXP
+# Copyright 2017-2024 NXP
 #
 
 require recipes-fsl/images/fsl-image-base.bb
@@ -61,7 +61,7 @@ IMAGE_INSTALL:append = " rsync irqbalance i2c-tools linuxptp"
 
 # PCIe demos and test apps
 PCIE_INSTALL_PACKAGES ?= " demo-pcie-shared-mem demo-virt-eth"
-IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos-support', ' ${PCIE_INSTALL_PACKAGES}', '', d)}"
+IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' ${PCIE_INSTALL_PACKAGES}', '', d)}"
 
 # sysfs gpio interface is deprecated, include gpiod tools, lib and headers
 IMAGE_INSTALL:append = " libgpiod libgpiod-tools libgpiod-dev"
