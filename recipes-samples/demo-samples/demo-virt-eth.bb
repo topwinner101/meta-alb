@@ -1,3 +1,5 @@
+# 'demo-virt-eth' recipe is not maintained for S32CC platforms.
+
 LICENSE = "GPL-2.0-or-later"
 LIC_FILES_CHKSUM = "file://pcie_virt_eth/COPYING;md5=39bba7d2cf0ba1036f2a6e2be52fe3f0"
 
