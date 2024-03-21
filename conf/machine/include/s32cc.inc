@@ -32,7 +32,7 @@ require ${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'conf/machine/in
 # Check whether to switch from SIUL2 drivers to SCMI ones
 SCMI_USE_SCMI_PINCTRL ??= "${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '1', '0', d)}"
 SCMI_USE_SCMI_GPIO ??= "${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '1', '0', d)}"
-SCMI_USE_SCMI_NVMEM ??= "0"
+SCMI_USE_SCMI_NVMEM ??= "${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '1', '0', d)}"
 SCMI_DTB_NODE_CHANGE = "${@'true' if int(d.getVar('SCMI_USE_SCMI_PINCTRL')) or int(d.getVar('SCMI_USE_SCMI_GPIO')) or int(d.getVar('SCMI_USE_SCMI_NVMEM')) else 'false'}"
 
 # Allow extensibility from other Yocto layers that define this include file
