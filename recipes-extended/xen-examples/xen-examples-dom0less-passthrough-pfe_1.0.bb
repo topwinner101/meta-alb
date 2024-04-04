@@ -10,3 +10,5 @@ do_compile[depends] += " \
     ${DOM0LESS_ROOTFS}:do_image_complete \
     xen-passthrough-dts:do_deploy \
 "
+
+COMPATIBLE_MACHINE = "(s32g399ardb3)"

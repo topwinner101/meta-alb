@@ -13,3 +13,5 @@ module_do_install() {
 }
 
 FILES:${PN} += "${sysconfdir}/modules-load.d/*"
+
+COMPATIBLE_MACHINE = "(s32g399ardb3)"
