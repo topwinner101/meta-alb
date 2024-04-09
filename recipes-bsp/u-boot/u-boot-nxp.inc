@@ -46,6 +46,12 @@ SRC_URI:append:s32cc = " \
     ${@ 'file://build/serial_configs/baudrate_${S32_BAUDRATE}.cfg' } \
 "
 
+# Apply Quick Startup Boot config
+DELTA_UBOOT_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-startup', ' quickstartup_config.cfg', '', d)}"
+SRC_URI:append:s32cc = " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'quick-startup', 'file://build/quickstartup_config.cfg', '', d)} \
+"
+
 # FIXME: Allow linking of 'tools' binaries with native libraries
 #        used for generating the boot logo and other tools used
 #        during the build process.
