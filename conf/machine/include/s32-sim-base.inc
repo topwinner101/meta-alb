@@ -1,5 +1,3 @@
-require conf/machine/include/s32-base.inc
-
 IMAGE_FSTYPES += "cpio.gz"
 IMAGE_FSTYPES:remove = "flashimage"
 

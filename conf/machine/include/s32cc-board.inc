@@ -1,10 +1,19 @@
 require conf/machine/include/s32cc.inc
 
+KERNEL_DEFCONFIG ?= "s32cc_defconfig"
+
 EXTRA_IMAGECMD:ext4 = "-i 4096 -L ${IMAGE_NAME}"
 IMAGE_FSTYPES:remove = "jffs2 ubi ext2.gz ext2.gz.u-boot"
 
 UBOOT_BOOTSPACE_OFFSET = "0"
 UBOOT_BOOTSPACE_SEEK = "0"
+
+UBOOT_CONFIG ?= "sdcard"
+UBOOT_CONFIG[sdcard] = "${UBOOT_DEFCONFIG},,u-boot-nodtb.${UBOOT_SUFFIX}"
+
+# prepend 'qspi' to keep the default deploy/u-boot-<MACHINE>.s32 to point to sdcard
+UBOOT_CONFIG:prepend = "qspi "
+UBOOT_CONFIG[qspi] = "${UBOOT_FLASH_DEFCONFIG},,u-boot-nodtb.${UBOOT_SUFFIX}"
 
 # Define dependencies for .flashimage
 # Offset values are in bytes and are deduced from the values defined in

@@ -1,6 +1,4 @@
-require conf/machine/include/s32-base.inc
-
-SOC_FAMILY:append = ":s32cc"
+require conf/machine/include/s32cc-base.inc
 
 INIT_MANAGER ?= "systemd"
 
