@@ -230,3 +230,7 @@ SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' f
 # Enable support for pcie demos
 SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' file://build/pcie_demos.config', '', d)}"
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' pcie_demos.config', '', d)}"
+
+# quick-startup configuration
+SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-startup', ' file://build/quick-startup.config', '', d)}"
+DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-startup', ' quick-startup.config', '', d)}"
