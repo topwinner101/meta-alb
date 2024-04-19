@@ -4,6 +4,8 @@ require qemu.inc
 
 DEPENDS += "glib-2.0 zlib pixman"
 
+DEPENDS:append:class-target = "${@bb.utils.contains('DISTRO_FEATURES', 'xen', ' xen-tools', '', d)}"
+
 DEPENDS:append:libc-musl = " libucontext"
 
 CFLAGS += "${@bb.utils.contains('DISTRO_FEATURES', 'x11', '', '-DEGL_NO_X11=1', d)}"
