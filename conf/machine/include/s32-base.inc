@@ -25,8 +25,8 @@ PREFERRED_VERSION_u-boot-s32 ?= "2022.04"
 PREFERRED_VERSION_u-boot-tools ?= "2022.04"
 PREFERRED_VERSION_u-boot-tools-native ?= "2022.04"
 PREFERRED_VERSION_nativesdk-u-boot-tools ?= "2022.04"
-PREFERRED_VERSION_xen ?= "4.17"
-PREFERRED_VERSION_xen-tools ?= "4.17"
+PREFERRED_VERSION_xen ?= "4.18"
+PREFERRED_VERSION_xen-tools ?= "4.18"
 
 PREFERRED_VERSION_optee-os ?= "4.0.0"
 PREFERRED_VERSION_optee-client ?= "4.0.0"
@@ -38,6 +38,7 @@ PREFERRED_VERSION_arm-trusted-firmware-tools ?= "2.10"
 
 PREFERRED_VERSION_rng-tools ?= "5"
 PREFERRED_VERSION_tcpreplay ?= "4.4.4"
+PREFERRED_VERSION_qemu ?= "8.2.1"
 
 # ensure bison is not removed from sysroot, otherwise
 # some build tasks e.g. kernel 'do_merge_delta_config' will fail
