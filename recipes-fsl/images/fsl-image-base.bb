@@ -67,6 +67,7 @@ require ${@bb.utils.contains('DISTRO_FEATURES', 'xen', 'recipes-fsl/images/fsl-i
 
 # Add OP-TEE user-space components
 IMAGE_INSTALL:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'optee', ' optee-client optee-examples optee-test ', '', d)}"
+IMAGE_INSTALL:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'optee hse', ' demo-tee-opaque-keys', '', d)}"
 
 # Add PKCS11-HSE Library & Examples
 IMAGE_INSTALL:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'hse', ' pkcs11-hse', '', d)}"

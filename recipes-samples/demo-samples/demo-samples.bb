@@ -22,6 +22,6 @@ FILES:${PN}-dbg += "${SAMPLESDIR}/.debug"
 
 DEPENDS += "libgpiod"
 
-# This recipe applies to all non-pcie demos.
+# This recipe applies to all non-pcie, non-tee demos.
 # Clustering demo has not been added.
 EXTRA_OEMAKE += "samples="multicore gpio_libgpiod networking""
