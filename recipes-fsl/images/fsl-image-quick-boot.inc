@@ -6,3 +6,6 @@ IMAGE_INSTALL:remove = "setserial \
     pciutil \
     linux-qspi-tool \
 "
+
+# Remove syslog from busybox
+PACKAGE_EXCLUDE = " busybox-syslog"
