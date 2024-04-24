@@ -23,7 +23,11 @@ FILES:${PN} = "${bindir} \
 	       ${nonarch_base_libdir}/optee_armtz/ \
                "
 
-DEPENDS += "optee-os-tadevkit optee-client"
+DEPENDS = "optee-client optee-os-tadevkit python3-cryptography-native"
+
+inherit python3native
+
+export OPENSSL_MODULES="${STAGING_LIBDIR_NATIVE}/ossl-modules"
 
 EXTRA_OEMAKE += "TA_DEV_KIT_DIR=${STAGING_INCDIR}/optee/export-user_ta \
 		 TEEC_EXPORT=${STAGING_DIR_HOST}${prefix} \
