@@ -9,3 +9,9 @@ IMAGE_INSTALL:remove = "setserial \
 
 # Remove syslog from busybox
 PACKAGE_EXCLUDE = " busybox-syslog"
+
+autologin() {
+    sed -i '/^ExecStart=/s/[^ ]*$/& --autologin root/' ${IMAGE_ROOTFS}${systemd_system_unitdir}/serial-getty@.service
+}
+
+ROOTFS_POSTPROCESS_COMMAND:append = " autologin;"
