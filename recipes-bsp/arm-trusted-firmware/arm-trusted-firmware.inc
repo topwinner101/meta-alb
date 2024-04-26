@@ -55,6 +55,7 @@ SECBOOT_ARGS = " \
 
 QUICK_STARTUP_ARGS = " \
               S32GEN1_DRAM_INLINE_ECC=0 \
+              LOG_LEVEL=20 \
               "
 
 EXTRA_OEMAKE += " \
