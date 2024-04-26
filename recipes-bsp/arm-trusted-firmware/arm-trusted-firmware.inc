@@ -53,6 +53,10 @@ SECBOOT_ARGS = " \
                  RSA_PRIV_FIP=${RSA_PRIV_FIP} \
                  "
 
+QUICK_STARTUP_ARGS = " \
+              S32GEN1_DRAM_INLINE_ECC=0 \
+              "
+
 EXTRA_OEMAKE += " \
                 CROSS_COMPILE=${TARGET_PREFIX} \
                 ARCH=${TARGET_ARCH} \
@@ -73,6 +77,7 @@ EXTRA_OEMAKE += 'OPENSSL_DIR="${STAGING_LIBDIR_NATIVE}/../" \
 EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '${SCPRT_ARGS}', '', d)}"
 EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'hse', '${HSE_ARGS}', '', d)}"
 EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'secboot', '${SECBOOT_ARGS}', '', d)}"
+EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'quick-startup', '${QUICK_STARTUP_ARGS}', '', d)}"
 
 # Switch to SCMI versions for pinctrl and NVMEM if it's the case
 EXTRA_OEMAKE += "S32CC_USE_SCMI_PINCTRL=${SCMI_USE_SCMI_PINCTRL}"
