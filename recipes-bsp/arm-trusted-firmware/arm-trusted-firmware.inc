@@ -4,14 +4,14 @@ DESCRIPTION = "ARM Trusted Firmware"
 LICENSE = "BSD-3-Clause"
 LIC_FILES_CHKSUM = "file://license.rst;md5=1dd070c98a281d18d9eefd938729b031"
 
-DEPENDS += "bc-native"
-DEPENDS += "coreutils-native"
-DEPENDS += "binutils-native"
-DEPENDS += "dtc-native xxd-native"
-DEPENDS += "openssl-native"
-DEPENDS += "u-boot-s32"
-DEPENDS += "u-boot-tools-native"
-DEPENDS += "${@ 'u-boot-tools-scmi-native' if d.getVar('SCMI_DTB_NODE_CHANGE') else ''}"
+DEPENDS:append = "bc-native "
+DEPENDS:append = "coreutils-native "
+DEPENDS:append = "binutils-native "
+DEPENDS:append = "dtc-native xxd-native "
+DEPENDS:append = "openssl-native "
+DEPENDS:append = "u-boot-s32 "
+DEPENDS:append:s32cc = "u-boot-tools-native "
+DEPENDS:append:s32cc = "${@ 'u-boot-tools-scmi-native' if d.getVar('SCMI_DTB_NODE_CHANGE') else ''} "
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
@@ -58,7 +58,7 @@ QUICK_BOOT_ARGS = " \
               LOG_LEVEL=20 \
               "
 
-EXTRA_OEMAKE += " \
+EXTRA_OEMAKE:append = " \
                 CROSS_COMPILE=${TARGET_PREFIX} \
                 ARCH=${TARGET_ARCH} \
                 BUILD_BASE=${B} \
@@ -66,32 +66,31 @@ EXTRA_OEMAKE += " \
                 DTB_FILE_NAME=${@os.path.basename(d.getVar('KERNEL_DEVICETREE'))} \
                 "
 
-EXTRA_OEMAKE += "${@oe.utils.conditional('BUILD_TYPE', 'debug', 'DEBUG=1', '', d)}"
+EXTRA_OEMAKE:append = "${@oe.utils.conditional('BUILD_TYPE', 'debug', 'DEBUG=1', '', d)} "
+EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'optee', '${OPTEE_ARGS}', '', d)} "
+EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'xen', '${XEN_ARGS}', '', d)} "
+EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'm7boot', '${M7BOOT_ARGS}', '', d)} "
 
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'optee', '${OPTEE_ARGS}', '', d)}"
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'xen', '${XEN_ARGS}', '', d)}"
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'm7boot', '${M7BOOT_ARGS}', '', d)}"
-
-EXTRA_OEMAKE += 'HOSTCC="${BUILD_CC} ${BUILD_CPPFLAGS} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}"'
-EXTRA_OEMAKE += 'OPENSSL_DIR="${STAGING_LIBDIR_NATIVE}/../" \
-                 HOSTSTRIP=true'
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '${SCPRT_ARGS}', '', d)}"
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'hse', '${HSE_ARGS}', '', d)}"
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'secboot', '${SECBOOT_ARGS}', '', d)}"
-EXTRA_OEMAKE += "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', '${QUICK_BOOT_ARGS}', '', d)}"
-
+EXTRA_OEMAKE:append = 'HOSTCC="${BUILD_CC} ${BUILD_CPPFLAGS} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}" '
+EXTRA_OEMAKE:append = 'OPENSSL_DIR="${STAGING_LIBDIR_NATIVE}/../" \
+                 HOSTSTRIP=true '
+EXTRA_OEMAKE:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '${SCPRT_ARGS}', '', d)} "
+EXTRA_OEMAKE:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'hse', '${HSE_ARGS}', '', d)} "
+EXTRA_OEMAKE:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'secboot', '${SECBOOT_ARGS}', '', d)} "
+EXTRA_OEMAKE:append:s32cc =  "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', '${QUICK_BOOT_ARGS}', '', d)} "
+#
 # Switch to SCMI versions for pinctrl and NVMEM if it's the case
-EXTRA_OEMAKE += "S32CC_USE_SCMI_PINCTRL=${SCMI_USE_SCMI_PINCTRL}"
-EXTRA_OEMAKE += "S32CC_USE_SCMI_NVMEM=${SCMI_USE_SCMI_NVMEM}"
+EXTRA_OEMAKE:append:s32cc = "S32CC_USE_SCMI_PINCTRL=${SCMI_USE_SCMI_PINCTRL} "
+EXTRA_OEMAKE:append:s32cc = "S32CC_USE_SCMI_NVMEM=${SCMI_USE_SCMI_NVMEM} "
 
 # Switch the UART baudrate to be used if it is the case
-EXTRA_OEMAKE += "${@ 'S32_LINFLEX_BAUDRATE=' + d.getVar("SERIAL_CONSOLES", True).split(" ")[0].split(";")[0] }"
+EXTRA_OEMAKE:append = "${@ 'S32_LINFLEX_BAUDRATE=' + d.getVar("SERIAL_CONSOLES", True).split(" ")[0].split(";")[0] } "
 
-PINCTRL_OPT = "${@oe.utils.conditional('SCMI_USE_SCMI_PINCTRL', '1', '--pinctrl', '--no-pinctrl', d)}"
-GPIO_OPT = "${@oe.utils.conditional('SCMI_USE_SCMI_GPIO', '1', '--gpio', '--no-gpio', d)}"
-NVMEM_OPT = "${@oe.utils.conditional('SCMI_USE_SCMI_NVMEM', '1', '--nvmem', '--no-nvmem', d)}"
+PINCTRL_OPT:s32cc = "${@oe.utils.conditional('SCMI_USE_SCMI_PINCTRL', '1', '--pinctrl', '--no-pinctrl', d)}"
+GPIO_OPT:s32cc = "${@oe.utils.conditional('SCMI_USE_SCMI_GPIO', '1', '--gpio', '--no-gpio', d)}"
+NVMEM_OPT:s32cc = "${@oe.utils.conditional('SCMI_USE_SCMI_NVMEM', '1', '--nvmem', '--no-nvmem', d)}"
 
-PLAT_HEADERS_TAGS = " s32gen1 s32cc"
+PLAT_HEADERS_TAGS:s32cc = " s32gen1 s32cc"
 PLAT_HEADERS_TAGS:append:s32g := " s32g"
 PLAT_HEADERS_TAGS:append:s32r := " s32r45"
 
@@ -111,7 +110,7 @@ do_compile() {
 	unset CFLAGS
 	unset CPPFLAGS
 
-	if ${SCMI_DTB_NODE_CHANGE}; then
+	if [ "${SCMI_DTB_NODE_CHANGE}" = "true" ] ; then
 		oe_runmake -C "${S}" dtbs
 		dtb_name="${ATF_BINARIES}/fdts/$(basename ${KERNEL_DEVICETREE})"
 		nativepython3 ${STAGING_BINDIR_NATIVE}/scmi_dtb_node_change.py \
@@ -140,7 +139,7 @@ do_deploy() {
 	done
 }
 
-do_install:append() {
+do_install:append:s32cc() {
 	install -d ${D}${includedir}/plat-hdrs
 	for tag in ${PLAT_HEADERS_TAGS}
 	do
@@ -173,8 +172,8 @@ do_install:append() {
 FILES:${PN} = ""
 
 FILES:${PN}-plat-hdrs = " ${includedir}/plat-hdrs/*.h "
-PROVIDES += "${PN}-plat-hdrs"
-PACKAGES += "${PN}-plat-hdrs"
+PROVIDES:append:s32cc = " ${PN}-plat-hdrs "
+PACKAGES:append:s32cc = " ${PN}-plat-hdrs "
 
 addtask do_clean_first before do_configure after do_prepare_recipe_sysroot
 addtask deploy after do_compile
