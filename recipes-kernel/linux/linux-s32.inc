@@ -15,8 +15,8 @@ BRANCH ??= "${RELEASE_BASE}-${PV}-rt"
 SRC_URI = "${URL};branch=${BRANCH}"
 
 DEPENDS:append = " libgcc dtc-native"
-DEPENDS:append = "${@ ' u-boot-tools-scmi-native' if d.getVar('SCMI_DTB_NODE_CHANGE') else ''}"
-DEPENDS:append = " arm-trusted-firmware-plat-hdrs"
+DEPENDS:append:s32cc = "${@ ' u-boot-tools-scmi-native' if d.getVar('SCMI_DTB_NODE_CHANGE') else ''}"
+DEPENDS:append:s32cc = " arm-trusted-firmware-plat-hdrs"
 
 KERNEL_CC:append = " ${TOOLCHAIN_OPTIONS}"
 KERNEL_LD:append = " ${TOOLCHAIN_OPTIONS}"
@@ -57,6 +57,15 @@ do_compile:prepend() {
         ln -sf ${STAGING_BINDIR_NATIVE}/dtc ${B}/scripts/dtc/dtc
     fi
 
+    # DTB might have been changed from an earlier build, see SCMI_DTB_NODE_CHANGE changes.
+    # Clean-up these changes to guarantee an updated DTB.
+	dtb_name="${B}/arch/arm64/boot/dts/${KERNEL_DEVICETREE}"
+	if [ -f ${dtb_name} ]; then
+	    rm ${dtb_name}
+	fi
+}
+
+do_compile:prepend:s32cc() {
     for hdr in ${STAGING_INCDIR}/plat-hdrs/*; do
         bname="$(basename ${hdr})"
         lhdr=$(find "${S}/include" -name "${bname}")
@@ -69,18 +78,11 @@ do_compile:prepend() {
             bbfatal_log "There is a difference in the platform header content between TF-A and the Linux repository (${hdr} vs ${lhdr})."
         fi
     done
-    
-    # DTB might have been changed from an earlier build, see SCMI_DTB_NODE_CHANGE changes.
-    # Clean-up these changes to guarantee an updated DTB.
-	dtb_name="${B}/arch/arm64/boot/dts/${KERNEL_DEVICETREE}"
-	if [ -f ${dtb_name} ]; then
-	    rm ${dtb_name}
-	fi
 }
 
 # Switch from SIUL2 to SCMI drivers if needed
 do_compile:append() {
-	if ${SCMI_DTB_NODE_CHANGE}; then
+	if [ "${SCMI_DTB_NODE_CHANGE}" = "true" ]; then
 		nativepython3 ${STAGING_BINDIR_NATIVE}/scmi_dtb_node_change.py \
 			${dtb_name} \
 			${GPIO_OPT} \
