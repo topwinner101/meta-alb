@@ -1,6 +1,6 @@
 # Copyright 2023,2024 NXP
 
-DEPENDS += "arm-trusted-firmware-tools-native"
+DEPENDS:append = " arm-trusted-firmware-tools-native"
 
 FIP_KEYS_DIR = "${WORKDIR}/keys_fip"
 RSA_PRIV_FIP = "${FIP_KEYS_DIR}/fip_rsa2048_private.pem"
@@ -28,5 +28,5 @@ do_install:append() {
 }
 
 FILES:${PN}-secboot = "${INSTALL_PATH_FIP_KEYS}${RSA_PUB_FIP_FILE}"
-PROVIDES += "${PN}-secboot"
-PACKAGES += "${PN}-secboot"
+PROVIDES:append = " ${PN}-secboot"
+PACKAGES:append = " ${PN}-secboot"

@@ -1,6 +1,6 @@
 # Copyright 2023,2024 NXP
 
-DEPENDS += "arm-trusted-firmware-tools-native"
+DEPENDS:append = " arm-trusted-firmware-tools-native"
 
 FIT_KEYS_DIR = "${WORKDIR}/keys_fit"
 RSA_PRIV_FIT = "boot_key.key"
@@ -46,8 +46,8 @@ do_install:append() {
 FILES:${PN}-verifiedboot += "${INSTALL_PATH_FIT_KEYS}${RSA_PUB_FIT}"
 FILES:${PN}-verifiedboot += "${INSTALL_PATH_FIT_KEYS}${RSA_PRIV_FIT}"
 FILES:${PN}-verifiedboot += "${INSTALL_PATH_FIT_KEYS}${ITS}"
-PROVIDES += "${PN}-verifiedboot"
-PACKAGES += "${PN}-verifiedboot"
+PROVIDES:append = " ${PN}-verifiedboot"
+PACKAGES:append = " ${PN}-verifiedboot"
 
 FILES:${PN}-verifiedboot-pubkey += "${INSTALL_PATH}${RSA_PUB_FIT}"
-PACKAGES += "${PN}-verifiedboot-pubkey"
+PACKAGES:append = " ${PN}-verifiedboot-pubkey"
