@@ -11,7 +11,7 @@ SRC_URI = "${URL};branch=${BRANCH}"
 SRCREV ?= "b90de006c39bb1dcf060b7178d0a832dfa75a24d"
 
 DEPENDS += "libp11 openssl hse-firmware"
-RDEPENDS:${PN} += "libp11 openssl hse-firmware"
+RDEPENDS:${PN} += "libp11 openssl-bin hse-firmware"
 
 S = "${WORKDIR}/git"
 
