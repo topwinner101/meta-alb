@@ -19,10 +19,12 @@ PROVIDES = "virtual/bootloader u-boot"
 SCMVERSION = "y"
 LOCALVERSION = ""
 
-HSE_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'hse', 'recipes-bsp/u-boot/u-boot-nxp-hse.inc', '', d)}"
+HSE_SUPPORT = ""
+HSE_SUPPORT:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'hse', 'recipes-bsp/u-boot/u-boot-nxp-hse.inc', '', d)}"
 include ${HSE_SUPPORT}
 
-VERIFIEDBOOT_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'recipes-bsp/u-boot/u-boot-nxp-verifiedboot.inc', '', d)}"
+VERIFIEDBOOT_SUPPORT = ""
+VERIFIEDBOOT_SUPPORT:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'recipes-bsp/u-boot/u-boot-nxp-verifiedboot.inc', '', d)}"
 include ${VERIFIEDBOOT_SUPPORT}
 
 DELTA_UBOOT_DEFCONFIG ?= ""
