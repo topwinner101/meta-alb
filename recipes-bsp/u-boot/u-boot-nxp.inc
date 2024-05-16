@@ -88,30 +88,56 @@ ENV_STAGE_DIR = "${datadir}/env"
 do_install:append:s32() {
     mkdir -p ${D}${ENV_STAGE_DIR}
 
-    # we should have one config
-    unset i
-    for config in ${UBOOT_MACHINE}; do
-        i=`expr $i + 1`;
-        unset j
-        for type in ${UBOOT_CONFIG}; do
-            j=`expr $j + 1`;
-            if [ $j -ne $i ]; then
-                continue
-            fi
+    if [ -z "${UBOOT_CONFIG}" ]; then
+        # remove any empty lines which might break the environment
+        sed '/^[[:space:]]*$/d' -i ${B}/env-default.txt
+        # install our environment file to usr/share to have it staged by yocto
+        install ${B}/env-default.txt ${D}${ENV_STAGE_DIR}/u-boot-default-flashenv.txt
+    else
+        # we should have one config
+        unset i
+        for config in ${UBOOT_MACHINE}; do
+            i=`expr $i + 1`;
+            unset j
+            for type in ${UBOOT_CONFIG}; do
+                j=`expr $j + 1`;
+                if [ $j -ne $i ]; then
+                    continue
+                fi
 
-            # remove any empty lines which might break the environment
-            sed '/^[[:space:]]*$/d' -i ${B}/${config}/env-default.txt
-            # install our environment file to usr/share to have it staged by yocto
-            install ${B}/${config}/env-default.txt ${D}${ENV_STAGE_DIR}/u-boot-default-flashenv${type}.txt
+                # remove any empty lines which might break the environment
+                sed '/^[[:space:]]*$/d' -i ${B}/${config}/env-default.txt
+                # install our environment file to usr/share to have it staged by yocto
+                install ${B}/${config}/env-default.txt ${D}${ENV_STAGE_DIR}/u-boot-default-flashenv${type}.txt
+            done
         done
-    done
-
+    fi
 }
 
-do_deploy:append:s32cc() {
+do_deploy:append:s32() {
     install -d ${DEPLOYDIR}
     install -d ${DEPLOYDIR}/tools
 
+    if [ -z "${UBOOT_CONFIG}" ]; then
+        install -v ${B}/u-boot-nodtb.bin ${DEPLOYDIR}/u-boot-nodtb.bin
+    else
+        unset i
+        for config in ${UBOOT_MACHINE}; do
+            i=`expr $i + 1`;
+            unset j
+            for type in ${UBOOT_CONFIG}; do
+                j=`expr $j + 1`;
+                if [ $j -ne $i ]; then
+                    continue
+                fi
+
+                install -v ${B}/${config}/u-boot-nodtb.bin ${DEPLOYDIR}/u-boot-nodtb.bin-${type}
+            done
+        done
+    fi
+}
+
+do_deploy:append:s32cc() {
     unset i
     for config in ${UBOOT_MACHINE}; do
         i=`expr $i + 1`;
@@ -122,7 +148,7 @@ do_deploy:append:s32cc() {
                 continue
             fi
 
-            install -v ${B}/${config}/u-boot-nodtb.bin ${DEPLOYDIR}/u-boot-nodtb.bin-${type}
+
             install -v ${B}/${config}/u-boot-s32.cfgout ${DEPLOYDIR}/tools/u-boot-s32.cfgout-${type}
             find ${B}/${config}/ -name "qspi_params_*" -exec install -v {} ${DEPLOYDIR}/tools/ \;
         done
