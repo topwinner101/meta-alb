@@ -184,7 +184,7 @@ PACKAGES:append:s32cc = " ${PN}-plat-hdrs"
 
 addtask deploy after do_compile
 
-do_compile[depends] = "virtual/bootloader:do_install"
+do_compile[depends] = "virtual/bootloader:do_deploy"
 do_compile[depends] += "${@bb.utils.contains('DISTRO_FEATURES', 'optee', 'optee-os:do_deploy', '', d)}"
 
 COMPATIBLE_MACHINE = "s32"

@@ -86,9 +86,10 @@ addtask merge_delta_config before do_configure after do_patch
 ENV_STAGE_DIR = "${datadir}/env"
 
 do_install:append:s32() {
-    unset i j
     mkdir -p ${D}${ENV_STAGE_DIR}
+
     # we should have one config
+    unset i
     for config in ${UBOOT_MACHINE}; do
         i=`expr $i + 1`;
         unset j
@@ -102,21 +103,30 @@ do_install:append:s32() {
             sed '/^[[:space:]]*$/d' -i ${B}/${config}/env-default.txt
             # install our environment file to usr/share to have it staged by yocto
             install ${B}/${config}/env-default.txt ${D}${ENV_STAGE_DIR}/u-boot-default-flashenv${type}.txt
-            install -d ${DEPLOY_DIR_IMAGE}
-            install -v ${B}/${config}/u-boot-nodtb.bin ${DEPLOY_DIR_IMAGE}/u-boot-nodtb.bin-${type}
-            install -d ${DEPLOY_DIR_IMAGE}/tools
-            install -v ${B}/${config}/u-boot-s32.cfgout ${DEPLOY_DIR_IMAGE}/tools/u-boot-s32.cfgout-${type}
-            find ${B}/${config}/ -name "qspi_params_*" -exec install -v {} ${DEPLOY_DIR_IMAGE}/tools/ \;
         done
     done
 
 }
 
-python do_clean:append () {
-    """clear the custom added files"""
+do_deploy:append:s32cc() {
+    install -d ${DEPLOYDIR}
+    install -d ${DEPLOYDIR}/tools
 
-    mkimage = os.path.join(d.getVar("DEPLOY_DIR_IMAGE"), "/tools/mkimage")
-    oe.path.remove(mkimage)
+    unset i
+    for config in ${UBOOT_MACHINE}; do
+        i=`expr $i + 1`;
+        unset j
+        for type in ${UBOOT_CONFIG}; do
+            j=`expr $j + 1`;
+            if [ $j -ne $i ]; then
+                continue
+            fi
+
+            install -v ${B}/${config}/u-boot-nodtb.bin ${DEPLOYDIR}/u-boot-nodtb.bin-${type}
+            install -v ${B}/${config}/u-boot-s32.cfgout ${DEPLOYDIR}/tools/u-boot-s32.cfgout-${type}
+            find ${B}/${config}/ -name "qspi_params_*" -exec install -v {} ${DEPLOYDIR}/tools/ \;
+        done
+    done
 }
 
 FILES:${PN} += "${ENV_STAGE_DIR}"
