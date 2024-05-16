@@ -112,7 +112,7 @@ do_configure:append() {
 	oe_runmake -C "${S}" clean
 }
 
-do_compile() {
+do_compile:s32cc() {
 	unset LDFLAGS
 	unset CFLAGS
 	unset CPPFLAGS
@@ -140,7 +140,10 @@ do_compile() {
 }
 
 do_deploy() {
-	install -d ${DEPLOYDIR}
+	install -d "${DEPLOYDIR}"
+}
+
+do_deploy:append:s32cc() {
 	for suffix in ${BOOT_TYPE}; do
 		cp -vf "${ATF_BINARIES}/fip.s32-${suffix}" ${DEPLOYDIR}
 	done
