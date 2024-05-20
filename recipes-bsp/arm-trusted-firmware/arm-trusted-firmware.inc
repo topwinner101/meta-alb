@@ -54,6 +54,7 @@ SECBOOT_ARGS = " \
                  "
 
 QUICK_BOOT_ARGS = " \
+              S32CC_COMPILE_FLAG=-Ofast \
               S32GEN1_DRAM_INLINE_ECC=0 \
               LOG_LEVEL=20 \
               "
