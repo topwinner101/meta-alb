@@ -234,5 +234,5 @@ SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' 
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' pcie_demos.config', '', d)}"
 
 # Apply Quick Boot configuration
-SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', ' file://build/quick-boot.cfg', '', d)}"
-DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', ' quick-boot.cfg', '', d)}"
+SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', ' file://build/quick-boot-common.cfg', '', d)}"
+DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', ' quick-boot-common.cfg', '', d)}"
