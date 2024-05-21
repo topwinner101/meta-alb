@@ -104,7 +104,7 @@ VERIFIEDBOOT_INC:s32cc = 'recipes-bsp/arm-trusted-firmware/atf-hse-verifiedboot.
 include ${@bb.utils.contains('DISTRO_FEATURES', 'secboot', '${SECBOOT_INC}', '', d)}
 include ${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', '${VERIFIEDBOOT_INC}', '', d)}
 
-do_clean_first() {
+do_configure:append() {
 	unset LDFLAGS
 	unset CFLAGS
 	unset CPPFLAGS
@@ -182,7 +182,6 @@ FILES:${PN}-plat-hdrs = " ${includedir}/plat-hdrs/*.h "
 PROVIDES:append:s32cc = " ${PN}-plat-hdrs"
 PACKAGES:append:s32cc = " ${PN}-plat-hdrs"
 
-addtask do_clean_first before do_configure after do_prepare_recipe_sysroot
 addtask deploy after do_compile
 
 do_compile[depends] = "virtual/bootloader:do_install"

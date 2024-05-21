@@ -15,7 +15,7 @@ do_generate_fip_keys () {
 }
 
 do_generate_fip_keys[depends] += "openssl-native:do_populate_sysroot"
-addtask do_generate_fip_keys before do_compile after do_clean_first
+addtask do_generate_fip_keys before do_compile after do_configure
 
 do_deploy:append() {
 	cp -vf "${RSA_PRIV_FIP}" ${DEPLOYDIR}

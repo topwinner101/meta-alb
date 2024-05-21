@@ -34,7 +34,7 @@ do_generate_fit_keys () {
 }
 
 do_generate_fit_keys[depends] += "openssl-native:do_populate_sysroot"
-addtask do_generate_fit_keys before do_compile after do_clean_first
+addtask do_generate_fit_keys before do_compile after do_configure
 
 do_install:append() {
        install -d ${D}${INSTALL_PATH_FIT_KEYS}
