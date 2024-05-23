@@ -42,6 +42,8 @@ M7BOOT_ARGS = " \
 SCPRT_ARGS = " \
                 S32CC_USE_SCP=1 \
                 FIP_ALIGN=64 \
+                BL2_BASE=0x34610000 \
+                BL2_LIMIT=0x346FFFFF \
                 "
 
 HSE_ARGS = " \
