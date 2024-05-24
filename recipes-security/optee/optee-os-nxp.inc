@@ -2,7 +2,7 @@ require optee-nxp.inc
 
 MAJ_VER = "${@oe.utils.trim_version("${PV}", 2)}"
 
-SRCREV = "53a40f6e93ab3eee40492273b8ea5dc723977305"
+SRCREV = "5b73ca9035ce37f992bbd5f58ff7044eb49027cb"
 
 URL ?= "git://github.com/nxp-auto-linux/optee_os;protocol=https"
 BRANCH ?= "${RELEASE_BASE}-${MAJ_VER}"
