@@ -139,6 +139,12 @@ kernel_do_install() {
         install -d ${D}${sysconfdir}/modprobe.d
 }
 
+
+do_kernel_localversion:append:s32() {
+        [ -f ${S}/.scmversion ] && sed -i "s/+p[0-9]//g" ${S}/.scmversion
+}
+
+
 do_install:append:s32() {
     if [ -f "arch/${ARCH}/boot/zImage" ]; then
         install -m 0644 arch/${ARCH}/boot/zImage ${D}/boot/zImage-${KERNEL_VERSION}
