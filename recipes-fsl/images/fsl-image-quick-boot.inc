@@ -3,9 +3,10 @@
 IMAGE_INSTALL:remove = "setserial \
     rng-tools \
     udev-extraconf \
-    pciutil \
     linux-qspi-tool \
 "
+
+IMAGE_INSTALL:remove = "${@bb.utils.contains('QUICK_BOOT_CONFIG', 'skippcie', 'pciutils', '', d)}"
 
 # Remove syslog from busybox
 PACKAGE_EXCLUDE = " busybox-syslog"

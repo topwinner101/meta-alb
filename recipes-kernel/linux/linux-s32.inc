@@ -200,6 +200,7 @@ SRC_URI += "\
     file://build/mmc_test.cfg \
 "
 
+require quick-boot.inc
 require vnet-s32.inc
 require llce.inc
 require ${@bb.utils.contains('DISTRO_FEATURES', 'verifiedboot', 'recipes-kernel/linux/verifiedboot.inc', '', d)}
@@ -238,7 +239,3 @@ SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' f
 # Enable support for pcie demos
 SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' file://build/pcie_demos.config', '', d)}"
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' pcie_demos.config', '', d)}"
-
-# Apply Quick Boot configuration
-SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', ' file://build/quick-boot-common.cfg', '', d)}"
-DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', ' quick-boot-common.cfg', '', d)}"

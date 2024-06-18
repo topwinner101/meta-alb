@@ -1,4 +1,5 @@
 require recipes-bsp/u-boot/u-boot.inc
+require recipes-bsp/u-boot/u-boot-quick-boot.inc
 
 inherit fsl-u-boot-localversion
 
@@ -46,12 +47,6 @@ S32_BAUDRATE = "${@d.getVar("SERIAL_CONSOLES", True).split(" ")[0].split(";")[0]
 DELTA_UBOOT_DEFCONFIG:append:s32cc = " serial_configs/baudrate_${S32_BAUDRATE}.cfg"
 SRC_URI:append:s32cc = " \
     ${@ 'file://build/serial_configs/baudrate_${S32_BAUDRATE}.cfg' } \
-"
-
-# Apply Quick Boot config
-DELTA_UBOOT_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', ' quickboot_config.cfg', '', d)}"
-SRC_URI:append:s32cc = " \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', 'file://build/quickboot_config.cfg', '', d)} \
 "
 
 # FIXME: Allow linking of 'tools' binaries with native libraries

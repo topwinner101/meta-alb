@@ -57,8 +57,11 @@ SECBOOT_ARGS = " \
 
 QUICK_BOOT_ARGS = " \
               S32CC_COMPILE_FLAG=-Ofast \
-              S32GEN1_DRAM_INLINE_ECC=0 \
               LOG_LEVEL=20 \
+              "
+
+NO_DRAM_ECC_ARGS = " \
+              S32GEN1_DRAM_INLINE_ECC=0 \
               "
 
 EXTRA_OEMAKE:append = " \
@@ -80,7 +83,8 @@ EXTRA_OEMAKE:append = ' OPENSSL_DIR="${STAGING_LIBDIR_NATIVE}/../" \
 EXTRA_OEMAKE:append:s32cc = " ${@bb.utils.contains('DISTRO_FEATURES', 'scprt', '${SCPRT_ARGS}', '', d)}"
 EXTRA_OEMAKE:append:s32cc = " ${@bb.utils.contains('DISTRO_FEATURES', 'hse', '${HSE_ARGS}', '', d)}"
 EXTRA_OEMAKE:append:s32cc = " ${@bb.utils.contains('DISTRO_FEATURES', 'secboot', '${SECBOOT_ARGS}', '', d)}"
-EXTRA_OEMAKE:append:s32cc = " ${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', '${QUICK_BOOT_ARGS}', '', d)}"
+EXTRA_OEMAKE:append:s32cc = "${@bb.utils.contains('QUICK_BOOT_CONFIG', 'nodramecc', '${NO_DRAM_ECC_ARGS}', '', d)}"
+EXTRA_OEMAKE:append:s32cc = "${@ "${QUICK_BOOT_ARGS}" if d.getVar('QUICK_BOOT_CONFIG', True) else ''}"
 #
 # Switch to SCMI versions for pinctrl and NVMEM if it's the case
 EXTRA_OEMAKE:append:s32cc = " S32CC_USE_SCMI_PINCTRL=${SCMI_USE_SCMI_PINCTRL}"

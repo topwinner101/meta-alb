@@ -76,4 +76,4 @@ IMAGE_INSTALL:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'hse', ' p
 IMAGE_INSTALL:append:s32 = "${@bb.utils.contains('DISTRO_FEATURES', 'secboot', ' arm-trusted-firmware-secboot', '', d)}"
 
 # Quick-boot image support
-require ${@bb.utils.contains('DISTRO_FEATURES', 'quick-boot', 'recipes-fsl/images/fsl-image-quick-boot.inc', '', d)}
+require ${@ 'recipes-fsl/images/fsl-image-quick-boot.inc' if d.getVar('QUICK_BOOT_CONFIG', True) else ''}
