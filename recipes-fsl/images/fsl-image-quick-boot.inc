@@ -8,6 +8,8 @@ IMAGE_INSTALL:remove = "setserial \
 
 IMAGE_INSTALL:remove = "${@bb.utils.contains('QUICK_BOOT_CONFIG', 'skippcie', 'pciutils', '', d)}"
 
+IMAGE_INSTALL:append = "${@bb.utils.contains('QUICK_BOOT_CONFIG', 'systemd-debug', ' systemd-analyze systemd-bootchart', '', d)}"
+
 # Remove syslog from busybox
 PACKAGE_EXCLUDE = " busybox-syslog"
 
