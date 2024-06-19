@@ -25,8 +25,8 @@ CFLAGS:prepend = "-I${S} "
 PACKAGES = "${PN} ${PN}-dbg"
 FILES:${PN} += "${bindir}/libfci_cli"
 
-RDEPENDS:${PN} = "pfe"
-RDEPENDS:${PN}-dbg = "pfe"
+RDEPENDS:${PN} = "${@bb.utils.contains('DISTRO_FEATURES', 'pfe-slave', 'pfe-slave', 'pfe', d)}"
+RDEPENDS:${PN}-dbg = "${@bb.utils.contains('DISTRO_FEATURES', 'pfe-slave', 'pfe-slave', 'pfe', d)}"
 
 do_compile() {
 	cd ${MDIR}
