@@ -286,6 +286,7 @@ LAYER_LIST=" \
 
 LSLAYERS=" \
     meta-qoriq \
+    meta-alb/meta-alb-qoriq \
 "
 
 USAGE_LIST="$LAYER_LIST \
