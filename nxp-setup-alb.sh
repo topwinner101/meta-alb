@@ -255,6 +255,7 @@ OPTIND=$OLD_OPTIND
 META_ALB_LAYER_LIST=" \
     meta-alb \
     meta-alb/meta-alb-bsp \
+    meta-alb/meta-alb-sdk \
 "
 
 ALB_LAYER_LIST=" \
