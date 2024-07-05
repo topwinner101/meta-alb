@@ -1,4 +1,5 @@
 require conf/machine/include/s32cc-base.inc
+require conf/machine/include/quick-boot-config.inc
 
 INIT_MANAGER ?= "systemd"
 
