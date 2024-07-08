@@ -1,4 +1,4 @@
-require recipes-extended/xen-examples/xen-examples.inc
+require recipes-extended/xen-examples/xen-examples-dom0less.inc
 
 CFG_NAME = "config_s32cc_dom0less_passthrough_pfe"
 

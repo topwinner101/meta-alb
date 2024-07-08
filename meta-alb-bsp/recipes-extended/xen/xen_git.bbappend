@@ -2,6 +2,7 @@
 
 require xen-nxp_git.inc
 
+# move to SDK
 RDEPENDS:${PN} += " ${@bb.utils.contains('DISTRO_FEATURES', 'virtio', 'virtio-disk', '', d)}"
 
 do_deploy:append() {
