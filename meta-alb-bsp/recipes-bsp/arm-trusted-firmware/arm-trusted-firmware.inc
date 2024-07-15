@@ -186,6 +186,7 @@ do_install:append:s32cc() {
 }
 
 FILES:${PN} = ""
+ALLOW_EMPTY:${PN} = "1"
 
 FILES:${PN}-plat-hdrs = " ${includedir}/plat-hdrs/*.h "
 PROVIDES:append:s32cc = " ${PN}-plat-hdrs"
