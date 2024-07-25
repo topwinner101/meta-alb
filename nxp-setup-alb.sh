@@ -19,7 +19,7 @@
 #
 # Add options for the script
 # Copyright (C) 2013-2015 Freescale Semiconductor, Inc.
-# Copyright 2016-2018, 2020 NXP
+# Copyright 2016-2018, 2020, 2024 NXP
 #  Modifications by:
 #          Heinz Wrobel <heinz.wrobel@nxp.com>
 #          Ionut Vicovan <ionut.vicovan@nxp.com>
@@ -253,7 +253,6 @@ done
 OPTIND=$OLD_OPTIND
 
 META_ALB_LAYER_LIST=" \
-    meta-alb \
     meta-alb/meta-alb-bsp \
     meta-alb/meta-alb-sdk \
 "
