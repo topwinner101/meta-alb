@@ -252,7 +252,7 @@ do
 done
 OPTIND=$OLD_OPTIND
 
-META_ALB_LAYER_LIST="
+META_ALB_LAYER_LIST=" \
     meta-alb \
     meta-alb/meta-alb-bsp \
 "
