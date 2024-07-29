@@ -49,6 +49,12 @@ SRC_URI:append:s32cc = " \
     ${@ 'file://build/serial_configs/baudrate_${S32_BAUDRATE}.cfg' } \
 "
 
+# Enable eMMC High Speed Modes (HS200/HS400/HS400ES)
+DELTA_UBOOT_DEFCONFIG:append:s32g = "${@bb.utils.contains('EMMC_FEATURES', 'high-speed', ' emmc_hs_enablement.cfg', '', d)}"
+SRC_URI:append:s32g = " \
+    ${@bb.utils.contains('EMMC_FEATURES', 'high-speed', 'file://build/emmc_hs_enablement.cfg', '', d)} \
+"
+
 # FIXME: Allow linking of 'tools' binaries with native libraries
 #        used for generating the boot logo and other tools used
 #        during the build process.
