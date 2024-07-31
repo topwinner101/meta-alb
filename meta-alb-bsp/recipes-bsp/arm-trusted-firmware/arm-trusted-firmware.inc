@@ -9,6 +9,7 @@ DEPENDS:append = " coreutils-native"
 DEPENDS:append = " binutils-native"
 DEPENDS:append = " dtc-native xxd-native"
 DEPENDS:append = " openssl-native"
+DEPENDS:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'secboot', 'mbedtls hse-firmware', '', d)}"
 DEPENDS:append = " u-boot-s32"
 DEPENDS:append:s32cc = " u-boot-tools-native"
 DEPENDS:append:s32cc = " ${@ 'u-boot-tools-scmi-native' if d.getVar('SCMI_DTB_NODE_CHANGE') else ''}"
@@ -19,7 +20,15 @@ inherit deploy
 
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
-RSA_PRIV_FIP ?= ""
+
+RSA_PRIV_BL2 ??= ""
+RSA_PRIV_BL31 ??= ""
+RSA_PRIV_BL32 ??= ""
+RSA_PRIV_BL33 ??= ""
+BL2_HANDLE ??= ""
+BL31_HANDLE ??= ""
+BL32_HANDLE ??= ""
+BL33_HANDLE ??= ""
 
 BUILD_TYPE ?= "release"
 
@@ -48,7 +57,15 @@ HSE_ARGS = " \
 
 SECBOOT_ARGS = " \
                  SECBOOT_SUPPORT=1 \
-                 RSA_PRIV_FIP=${RSA_PRIV_FIP} \
+                 BL2_KEY=${RSA_PRIV_BL2} \
+                 BL31_KEY=${RSA_PRIV_BL31} \
+                 BL32_KEY=${RSA_PRIV_BL32} \
+                 BL33_KEY=${RSA_PRIV_BL33} \
+                 BL31_HSE_KEYHANDLE=${BL31_HANDLE} \
+                 BL32_HSE_KEYHANDLE=${BL32_HANDLE} \
+                 BL33_HSE_KEYHANDLE=${BL33_HANDLE} \
+                 NXP_HSE_FWDIR=${STAGING_INCDIR}/hse-interface \
+                 MBEDTLS_DIR=${RECIPE_SYSROOT}/usr/share/mbedtls-source \
                  "
 
 QUICK_BOOT_ARGS = " \
