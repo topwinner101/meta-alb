@@ -55,6 +55,12 @@ SRC_URI:append:s32g = " \
     ${@bb.utils.contains('EMMC_FEATURES', 'high-speed', 'file://build/emmc_hs_enablement.cfg', '', d)} \
 "
 
+DELTA_UBOOT_DEFCONFIG:append:s32g399ardb3 = "${@bb.utils.contains('DISTRO_FEATURES', 'pfe-slave', ' pfe-slave_config.cfg', '', d)}"
+DELTA_UBOOT_DEFCONFIG:remove:s32g399ardb3 = "${@bb.utils.contains('DISTRO_FEATURES', 'pfe', ' pfe-slave_config.cfg', '', d)}"
+SRC_URI:append:s32g399ardb3 = " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'pfe-slave', 'file://build/pfe-slave_config.cfg', '', d)} \
+"
+
 # FIXME: Allow linking of 'tools' binaries with native libraries
 #        used for generating the boot logo and other tools used
 #        during the build process.
