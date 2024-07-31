@@ -2,7 +2,6 @@ Different components of meta-alb are under different licenses (a mix
 of MIT and proprietary). Please see:
 
 COPYING.MIT (MIT)
-custom-licenses/* (Various EULAs, included by recipes)
 
 All metadata is MIT licensed unless otherwise stated. Source code and binaries
 included in tree for individual recipes are under the LICENSE stated in
