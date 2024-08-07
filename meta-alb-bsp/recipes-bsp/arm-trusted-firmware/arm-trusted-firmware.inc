@@ -31,10 +31,6 @@ OPTEE_ARGS = " \
                 SPD=opteed \
                 "
 
-XEN_ARGS = " \
-                S32_HAS_HV=1 \
-                "
-
 M7BOOT_ARGS = " \
                 FIP_OFFSET_DELTA=0x2000 \
                 "
@@ -74,7 +70,6 @@ EXTRA_OEMAKE:append = " \
 
 EXTRA_OEMAKE:append = " ${@oe.utils.conditional('BUILD_TYPE', 'debug', 'DEBUG=1', '', d)}"
 EXTRA_OEMAKE:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'optee', '${OPTEE_ARGS}', '', d)}"
-EXTRA_OEMAKE:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'xen', '${XEN_ARGS}', '', d)}"
 EXTRA_OEMAKE:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'm7boot', '${M7BOOT_ARGS}', '', d)}"
 
 EXTRA_OEMAKE:append = ' HOSTCC="${BUILD_CC} ${BUILD_CPPFLAGS} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}"'
