@@ -11,5 +11,5 @@ DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('QUICK_BOOT_CONFIG',
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('QUICK_BOOT_CONFIG', 'kernelextmodules', ' quickboot-kernelextmodules.cfg', '', d)}"
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('QUICK_BOOT_CONFIG', 'systemd-debug', ' quickboot-systemd-debug.cfg', '', d)}"
 
-HSE_RNG_QUICK_BOOT = "${@bb.utils.contains('DISTRO_FEATURES', 'hse', 'quickboot-hse-rng.cfg', '', d)}"
+HSE_RNG_QUICK_BOOT = "${@ 'quickboot-hse-rng.cfg' if 'hse' in d.getVar('DISTRO_FEATURES') and 'secboot' not in d.getVar('DISTRO_FEATURES') else ''}"
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('QUICK_BOOT_CONFIG', 'hserng', ' ${HSE_RNG_QUICK_BOOT}', '', d)}"
