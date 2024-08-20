@@ -1,8 +1,9 @@
-From 17370bed3b6fc4b44ac0082210916f7640d8aa66 Mon Sep 17 00:00:00 2001
+From d6268b54ea4eb1433198a5d6b93191b26e9d01ec Mon Sep 17 00:00:00 2001
 From: Ciprian Marian Costea <ciprianmarian.costea@nxp.com>
-Date: Fri, 7 Jun 2024 13:56:03 +0300
+Date: Tue, 20 Aug 2024 13:17:05 +0300
 Subject: [PATCH] dts: Enable eMMC HS400 mode in case of verifiedboot and
  quickboot
+Content-Type: text/plain; charset=UTF-8
 
 Since verifiedboot support is based on Linux Kernel dtb its files,
 the runtime fdt fixup mechanism from U-Boot will not work.
@@ -14,21 +15,19 @@ features are both enabled.
 Issue: ALB-11494
 Signed-off-by: Ciprian Marian Costea <ciprianmarian.costea@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/s32g274a-rdb2.dtsi | 12 ------------
- arch/arm64/boot/dts/freescale/s32g399a-rdb3.dtsi |  4 ----
- arch/arm64/boot/dts/freescale/s32gxxxa-evb.dtsi  |  1 -
- 3 files changed, 17 deletions(-)
+ arch/arm64/boot/dts/freescale/s32g274a-rdb2.dtsi | 9 ---------
+ arch/arm64/boot/dts/freescale/s32g399a-rdb3.dtsi | 4 ----
+ arch/arm64/boot/dts/freescale/s32gxxxa-evb.dtsi  | 1 -
+ 3 files changed, 14 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/freescale/s32g274a-rdb2.dtsi b/arch/arm64/boot/dts/freescale/s32g274a-rdb2.dtsi
-index 6c1dfebef79d..57446d1281ef 100644
+index 30971db22f81..cf85fbc0d040 100644
 --- a/arch/arm64/boot/dts/freescale/s32g274a-rdb2.dtsi
 +++ b/arch/arm64/boot/dts/freescale/s32g274a-rdb2.dtsi
-@@ -42,15 +42,3 @@ &pfe_netif1 {
- 	phy-mode = "sgmii";
- 	phy-handle = <&gmac_mdio_a_phy3>;
- };
--
--&usdhc0 {
+@@ -45,13 +45,4 @@ &pfe_netif1 {
+ 
+ &usdhc0 {
+ 	disable-wp;
 -	/* Remove no-1-8-v to enable higher speed modes for SD card.
 -	 * However, this is not enough to enable HS400 or HS200 modes for eMMC.
 -	 * In this case, the position of the resistor R797 must be changed
@@ -38,15 +37,15 @@ index 6c1dfebef79d..57446d1281ef 100644
 -	 * the wrong VCCQ voltage applied to the eMMC.
 -	 */
 -	no-1-8-v;
--};
+ };
 diff --git a/arch/arm64/boot/dts/freescale/s32g399a-rdb3.dtsi b/arch/arm64/boot/dts/freescale/s32g399a-rdb3.dtsi
-index c2d932d5f809..dd276ff08b15 100644
+index 53f5a6752c24..ac60929947f7 100644
 --- a/arch/arm64/boot/dts/freescale/s32g399a-rdb3.dtsi
 +++ b/arch/arm64/boot/dts/freescale/s32g399a-rdb3.dtsi
-@@ -68,8 +68,4 @@ &usdhc0 {
- 	mmc-hs200-1_8v;
+@@ -69,8 +69,4 @@ &usdhc0 {
  	mmc-hs400-1_8v;
  	mmc-hs400-enhanced-strobe;
+ 	disable-wp;
 -	/* Remove no-1-8-v to enable higher speed modes for SD card such as: SDR50 or DDR50
 -	 * or eMMC memory, such as HS200, HS400 or HS400 ES respectively.
 -	 */
@@ -65,5 +64,5 @@ index a917f4988222..237a86feb720 100644
  };
  
 -- 
-2.25.1
+2.45.2
 
