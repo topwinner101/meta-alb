@@ -12,7 +12,7 @@ SRC_URI:remove:s32g = "git://git.yoctoproject.org/linux-yocto.git;name=machine;b
 KVER = "5.15.158"
 PV = "${KVER}"
 SRCBRANCH:s32g = "${RELEASE_BASE}-${KVER}-rt"
-SRCREV_machine:s32g = "5e7ae2208a6636e688464c7b64d1264f24a6a19a"
+SRCREV_machine:s32g = "8db85cab3f1918878708b673abef60fda07e0ff2"
 
 # instead, we will take NXP linux project from GitHub
 SRC_URI:append:s32g = "\
