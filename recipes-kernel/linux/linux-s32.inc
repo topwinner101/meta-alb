@@ -128,7 +128,7 @@ DELTA_KERNEL_DEFCONFIG:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'virti
 # Docker configuration
 DELTA_KERNEL_DEFCONFIG:append = "${@bb.utils.contains('DISTRO_FEATURES', 'docker', ' docker.config', '', d)}"
 SRC_URI += "\
-    ${@bb.utils.contains('DISTRO_FEATURES', 'docker', 'file://build/docker.config', '', d)} "
+    ${@bb.utils.contains('DISTRO_FEATURES', 'docker', 'file://docker.config', '', d)} "
 
 # GPU configuration
 DELTA_KERNEL_DEFCONFIG:append = "${@bb.utils.contains('DISTRO_FEATURES', 'gpu', ' gpu.config', '', d)}"
@@ -138,10 +138,10 @@ DELTA_KERNEL_DEFCONFIG:append = "${@bb.utils.contains('DISTRO_FEATURES', 'bsp-ut
 
 
 SRC_URI += "\
-    file://build/containers.config \
-    file://build/virtio \
-    file://build/gpu.config \
-    file://build/mmc_test.cfg \
+    file://containers.config \
+    file://virtio \
+    file://gpu.config \
+    file://mmc_test.cfg \
 "
 
 require vnet-s32.inc
@@ -162,20 +162,20 @@ DELTA_KERNEL_DEFCONFIG:append = " \
     "
 SRC_URI += "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'xen', 'file://xen.cfg', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'xen', 'file://build/xen_s32.cfg', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'xen', 'file://xen_s32.cfg', '', d)} \
     "
 
 # Enable Trusted Execution Environment (TEE) support and add the OP-TEE driver
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'optee', ' optee.cfg', '', d)}"
-SRC_URI:append:s32cc = " ${@bb.utils.contains('DISTRO_FEATURES', 'optee', ' file://build/optee.cfg', '', d)}"
+SRC_URI:append:s32cc = " ${@bb.utils.contains('DISTRO_FEATURES', 'optee', ' file://optee.cfg', '', d)}"
 
 # make everything compatible for the time being
 COMPATIBLE_MACHINE:$MACHINE = "$MACHINE"
 
 # Enable dm-verity
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' dm-verity.cfg', '', d)}"
-SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' file://build/dm-verity.cfg', '', d)}"
+SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' file://dm-verity.cfg', '', d)}"
 
 # Enable support for pcie demos
-SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' file://build/pcie_demos.config', '', d)}"
+SRC_URI:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' file://pcie_demos.config', '', d)}"
 DELTA_KERNEL_DEFCONFIG:append:s32cc = "${@bb.utils.contains('DISTRO_FEATURES', 'pcie-demos', ' pcie_demos.config', '', d)}"
